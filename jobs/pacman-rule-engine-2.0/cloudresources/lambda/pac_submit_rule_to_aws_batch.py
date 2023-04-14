@@ -12,7 +12,7 @@ jobDefinition = os.environ.get('JOB_DEFINITION') #JOB_DEFINITION:pacman-rule-eng
 
 def lambda_handler(event, context):
     # Log the received event
-    print("Received event: " + json.dumps(event, indent=2))
+    print(f"Received event: {json.dumps(event, indent=2)}")
     if jobQueue is None or jobDefinition is None:
         print("job definition or environment not found")
         return
@@ -21,16 +21,16 @@ def lambda_handler(event, context):
 def submit_to_batch(jobQueue,jobName,jobDefinition,containerOverrides,parameters):
 
     try:
-            # Submit a Batch Job
-            response = batch.submit_job(jobQueue=jobQueue, jobName=jobName, jobDefinition=jobDefinition,
-                                        containerOverrides=containerOverrides, parameters=parameters)
+        # Submit a Batch Job
+        response = batch.submit_job(jobQueue=jobQueue, jobName=jobName, jobDefinition=jobDefinition,
+                                    containerOverrides=containerOverrides, parameters=parameters)
             # Log response from AWS Batch
-            print("Response: " + json.dumps(response, indent=2))
-            # Return the jobId
-            jobId = response['jobId']
-            return {
-                'jobId': jobId
-            }
+        print(f"Response: {json.dumps(response, indent=2)}")
+        # Return the jobId
+        jobId = response['jobId']
+        return {
+            'jobId': jobId
+        }
     except Exception as e:
             print(e)
             message = 'Error submitting Batch Job'
@@ -43,7 +43,7 @@ def submit_to_batch(jobQueue,jobName,jobDefinition,containerOverrides,parameters
 ##
 def processJsonInput(event,context):
     # job name cannot be more then 128 characters for AWS batch
-    jobName =  event['ruleId'][0:123] + '-job'
+    jobName = event['ruleId'][:123] + '-job'
 
     executableName = "pac-managed-rules"
 
@@ -54,14 +54,15 @@ def processJsonInput(event,context):
 
     if event.get('parameters'):
         parameters = event['parameters']
-    else:
-         if('ruleType' in event and event['ruleType']=="Serverless"):
-            executableName = "rule-engine"
+    elif ('ruleType' in event and event['ruleType']=="Serverless"):
+        executableName = "rule-engine"
 
-    parameters = {"executableName":executableName +".jar",
-                 "params":json.dumps(event),
-                 "jvmMemParams":os.getenv('JVM_HEAP_SIZE',"-Xms1024m -Xmx4g"),
-                 "ruleEngineExecutableName":"rule-engine.jar",
-                 "entryPoint":"com.tmobile.pacman.executor.RuleExecutor"}
+    parameters = {
+        "executableName": f"{executableName}.jar",
+        "params": json.dumps(event),
+        "jvmMemParams": os.getenv('JVM_HEAP_SIZE', "-Xms1024m -Xmx4g"),
+        "ruleEngineExecutableName": "rule-engine.jar",
+        "entryPoint": "com.tmobile.pacman.executor.RuleExecutor",
+    }
 
     return submit_to_batch(jobQueue,jobName,jobDefinition,containerOverrides,parameters)

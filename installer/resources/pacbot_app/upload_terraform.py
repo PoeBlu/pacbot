@@ -18,7 +18,7 @@ class UploadTrraform(NullResource):
             aws_access_key_id=Settings.AWS_ACCESS_KEY,
             aws_secret_access_key=Settings.AWS_SECRET_KEY)
 
-        zip_file_name = Settings.RESOURCE_NAME_PREFIX + "-terraform-installer-backup"
+        zip_file_name = f"{Settings.RESOURCE_NAME_PREFIX}-terraform-installer-backup"
         zip_file_abs_path = os.path.join(Settings.BASE_APP_DIR, zip_file_name)
         dir_to_archive = Settings.DATA_DIR
         SysLog().write_debug_log("Started Archiving Terraform Directory")
@@ -26,9 +26,11 @@ class UploadTrraform(NullResource):
         SysLog().write_debug_log("Completed Archiving")
 
         bucket_name = BucketStorage.get_input_attr('bucket')
-        zip_file_name = zip_file_name + ".zip"
-        zip_file_abs_path = zip_file_abs_path + ".zip"
-        SysLog().write_debug_log("Started Uploading Archived Terraform(Zip File: %s) into S3 Bucket(Name: %s)" % (zip_file_abs_path, bucket_name))
+        zip_file_name = f"{zip_file_name}.zip"
+        zip_file_abs_path = f"{zip_file_abs_path}.zip"
+        SysLog().write_debug_log(
+            f"Started Uploading Archived Terraform(Zip File: {zip_file_abs_path}) into S3 Bucket(Name: {bucket_name})"
+        )
         s3_client.upload_file(
             zip_file_abs_path,
             bucket_name,

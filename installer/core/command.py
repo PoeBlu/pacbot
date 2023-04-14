@@ -43,9 +43,7 @@ class Command:
         self.optional_args = command_class.OPTIONAL_ARGS
 
         args_supplied = self.get_optional_args(sys_argv)
-        command_class_instance = command_class(args_supplied)
-
-        return command_class_instance
+        return command_class(args_supplied)
 
     def get_command_class_from_cli(self, sys_argv):
         """
@@ -69,9 +67,7 @@ class Command:
         import_mod = valid_command['type'] + "." + self.base_dir + '.' + command_name
 
         command_module = importlib.import_module(import_mod)
-        command_class = getattr(command_module, command_name.title())
-
-        return command_class
+        return getattr(command_module, command_name.title())
 
     def get_optional_args(self, sys_argv):
         """
@@ -83,10 +79,9 @@ class Command:
         Returns:
             args_set (list): List of optional arguments supplied to the command
         """
-        args_list = sys_argv[2:]
         args_set = []
 
-        if args_list:
+        if args_list := sys_argv[2:]:
             args_set = []
             for item in args_list:
                 splits = item.split('=')
@@ -105,7 +100,7 @@ class Command:
         """If the given command is not valid or if no command is supplied then exit execution with displaying the available commands"""
         print("**** Command Not Found *****\nValid Commands are")
         for item in self. get_valid_commands():
-            print("   %s" % item)
+            print(f"   {item}")
 
         sys.exit()
 
@@ -127,7 +122,7 @@ class Command:
 
         custom_command_file_names = get_dir_file_names(self.custom_commands_dir_path)
         custom_command_names = self.get_filtered_command_names(custom_command_file_names)
-        commands_dict.update({name: {'type': "custom"} for name in custom_command_names})
+        commands_dict |= {name: {'type': "custom"} for name in custom_command_names}
 
         return commands_dict
 
@@ -182,11 +177,10 @@ class Command:
         Returns:
             boolean: If valid arguments then True else False
         """
-        for (key, val) in args_set:
-            if not (key.startswith('--') and key in self.valid_arg_keys):
-                return False
-
-        return True
+        return all(
+            (key.startswith('--') and key in self.valid_arg_keys)
+            for key, val in args_set
+        )
 
     def exit_system_showing_valid_optional_args(self):
         """Exit the execution as the optional parameter supplied is invalid"""

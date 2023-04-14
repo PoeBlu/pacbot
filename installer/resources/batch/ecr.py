@@ -33,24 +33,25 @@ class RuleEngineDockerImageBuild(NullResource):
 
     def get_provisioners(self):
         docker_creation_script = os.path.join(get_terraform_scripts_dir(), self.image_creation_script)
-        local_execs = [
+        return [
             {
                 'local-exec': {
                     'command': docker_creation_script,
                     'environment': {
-                        'ECR_REPOSITORY': RuleEngineEcrRepository.get_output_attr('repository_url'),
+                        'ECR_REPOSITORY': RuleEngineEcrRepository.get_output_attr(
+                            'repository_url'
+                        ),
                         'PROVIDER_FILE': get_terraform_provider_file(),
                         'DOCKER_FILE': 'dockerfile',
-                        'DOCKER_FILE_DIR': os.path.join(self.dest_dir, 'batch_docker'),
-                        'LOG_FILE': os.path.join(Settings.LOG_DIR, 'debug.log')
+                        'DOCKER_FILE_DIR': os.path.join(
+                            self.dest_dir, 'batch_docker'
+                        ),
+                        'LOG_FILE': os.path.join(Settings.LOG_DIR, 'debug.log'),
                     },
-                    'interpreter': [Settings.PYTHON_INTERPRETER]
+                    'interpreter': [Settings.PYTHON_INTERPRETER],
                 }
             }
-
         ]
-
-        return local_execs
 
     def add_vaues_for_bucket_placeholder(self):
         input_sh_file = os.path.join(self.dest_dir, "batch_docker", "fetch_and_run.sh.tpl")

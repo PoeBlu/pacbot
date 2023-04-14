@@ -75,7 +75,7 @@ def build_docker_image(docker_file_dir, docker_file, repository, log_file):
         auth_config_payload (dict): AWS auth config
     """
     docker_client = Client(base_url='unix://var/run/docker.sock')
-    write_to_debug_log(log_file, "Creating Docker image: %s ..." % str(repository))
+    write_to_debug_log(log_file, f"Creating Docker image: {str(repository)} ...")
 
     info = docker_client.build(
         dockerfile=docker_file,
@@ -87,7 +87,10 @@ def build_docker_image(docker_file_dir, docker_file, repository, log_file):
         for item in info:
             f.write("%s %s\n" % (" " * 10, str(item)))
 
-    write_to_debug_log(log_file, "Docker image: %s has been created locally!!!" % str(repository))
+    write_to_debug_log(
+        log_file,
+        f"Docker image: {str(repository)} has been created locally!!!",
+    )
 
     return docker_client
 

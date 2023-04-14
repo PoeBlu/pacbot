@@ -23,36 +23,56 @@ class BaseLR:
     condition_field = "path-pattern"
 
 
+
+
 class ConfigALBHttpsListenerRule(ALBListenerRuleResource, BaseLR):
     action_target_group_arn = tg.ConfigALBTargetGroup.get_output_attr('arn')
-    condition_values = [PATH_PREFIX + "config*"]
+    condition_values = [f"{PATH_PREFIX}config*"]
+
+
+
 
 
 class AdminALBHttpsListenerRule(ALBListenerRuleResource, BaseLR):
     action_target_group_arn = tg.AdminALBTargetGroup.get_output_attr('arn')
-    condition_values = [PATH_PREFIX + "admin*"]
+    condition_values = [f"{PATH_PREFIX}admin*"]
+
+
+
 
 
 class ComplianceALBHttpsListenerRule(ALBListenerRuleResource, BaseLR):
     action_target_group_arn = tg.ComplianceALBTargetGroup.get_output_attr('arn')
-    condition_values = [PATH_PREFIX + "compliance*"]
+    condition_values = [f"{PATH_PREFIX}compliance*"]
+
+
+
 
 
 class NotificationsALBHttpsListenerRule(ALBListenerRuleResource, BaseLR):
     action_target_group_arn = tg.NotificationsALBTargetGroup.get_output_attr('arn')
-    condition_values = [PATH_PREFIX + "notifications*"]
+    condition_values = [f"{PATH_PREFIX}notifications*"]
+
+
+
 
 
 class StatisticsALBHttpsListenerRule(ALBListenerRuleResource, BaseLR):
     action_target_group_arn = tg.StatisticsALBTargetGroup.get_output_attr('arn')
-    condition_values = [PATH_PREFIX + "statistics*"]
+    condition_values = [f"{PATH_PREFIX}statistics*"]
+
+
+
 
 
 class AssetALBHttpsListenerRule(ALBListenerRuleResource, BaseLR):
     action_target_group_arn = tg.AssetALBTargetGroup.get_output_attr('arn')
-    condition_values = [PATH_PREFIX + "asset*"]
+    condition_values = [f"{PATH_PREFIX}asset*"]
+
+
+
 
 
 class AuthALBHttpsListenerRule(ALBListenerRuleResource, BaseLR):
     action_target_group_arn = tg.AuthALBTargetGroup.get_output_attr('arn')
-    condition_values = [PATH_PREFIX + "auth*"]
+    condition_values = [f"{PATH_PREFIX}auth*"]

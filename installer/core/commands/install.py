@@ -40,8 +40,9 @@ class Install(BaseCommand):
             if self.check_pre_requisites() is False:
                 self.exit_system_with_pre_requisites_fail()
 
-            resources_to_process = self.get_resources_to_process(input_instance)
-            if resources_to_process:
+            if resources_to_process := self.get_resources_to_process(
+                input_instance
+            ):
                 self.install_class(self.args, input_instance).execute(
                     resources_to_process,
                     self.terraform_with_targets,
@@ -57,9 +58,15 @@ class Install(BaseCommand):
         Args:
             provider (str): Provider name based on which corresponding classes are retrieved
         """
-        self.validation_class = getattr(importlib.import_module(
-            provider.provider_module + '.validate'), 'SystemInstallValidation')
-        self.input_class = getattr(importlib.import_module(
-            provider.provider_module + '.input'), 'SystemInstallInput')
-        self.install_class = getattr(importlib.import_module(
-            provider.provider_module + '.install'), 'Install')
+        self.validation_class = getattr(
+            importlib.import_module(f'{provider.provider_module}.validate'),
+            'SystemInstallValidation',
+        )
+        self.input_class = getattr(
+            importlib.import_module(f'{provider.provider_module}.input'),
+            'SystemInstallInput',
+        )
+        self.install_class = getattr(
+            importlib.import_module(f'{provider.provider_module}.install'),
+            'Install',
+        )

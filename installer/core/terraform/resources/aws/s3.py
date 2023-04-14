@@ -42,4 +42,6 @@ class S3BucketObject(TerraformResource):
 
     def pre_terraform_apply(self):
         if not os.path.exists(self.source) and self.skip_source_exists_check is not True:
-            raise Exception("Source object not found for S3 upload. Source: %s, TF-Resource: %s" % (self.source, self.get_resource_id()))
+            raise Exception(
+                f"Source object not found for S3 upload. Source: {self.source}, TF-Resource: {self.get_resource_id()}"
+            )

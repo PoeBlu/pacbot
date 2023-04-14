@@ -34,15 +34,16 @@ class LoadBalancerResource(TerraformResource):
             checked_details (dict): Status of the existence check
         """
         checked_details = {'attr': "name", 'value': self.get_input_attr('name')}
-        exists = False
-
-        if not self.resource_in_tf_output(tf_outputs):
-            exists = elb.check_alb_exists(
+        exists = (
+            False
+            if self.resource_in_tf_output(tf_outputs)
+            else elb.check_alb_exists(
                 checked_details['value'],
                 input.aws_access_key,
                 input.aws_secret_key,
-                input.aws_region)
-
+                input.aws_region,
+            )
+        )
         return exists, checked_details
 
 
@@ -78,9 +79,10 @@ class ALBListenerResource(TerraformResource):
             success (boolean): Validation is success or not
             msg_list (list): List of validation messages
         """
-        if self.protocol == "HTTPS":
-            if not Settings.get('SSL_CERTIFICATE_ARN', None):
-                return False, ["Certifcate ARN is not found for ELB SSL Policy"]
+        if self.protocol == "HTTPS" and not Settings.get(
+            'SSL_CERTIFICATE_ARN', None
+        ):
+            return False, ["Certifcate ARN is not found for ELB SSL Policy"]
 
         return super().validate_input_args()
 
@@ -160,13 +162,14 @@ class ALBTargetGroupResource(TerraformResource):
             checked_details (dict): Status of the existence check
         """
         checked_details = {'attr': "name", 'value': self.get_input_attr('name')}
-        exists = False
-
-        if not self.resource_in_tf_output(tf_outputs):
-            exists = elb.check_target_group_exists(
+        exists = (
+            False
+            if self.resource_in_tf_output(tf_outputs)
+            else elb.check_target_group_exists(
                 checked_details['value'],
                 input.aws_access_key,
                 input.aws_secret_key,
-                input.aws_region)
-
+                input.aws_region,
+            )
+        )
         return exists, checked_details

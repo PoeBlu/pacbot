@@ -34,10 +34,11 @@ def get_dir_file_names(directory_path):
     Returns:
         dirs (list): List of all files in a dir
     """
-    files_only = [f for f in os.listdir(directory_path) if os.path.isfile(
-        os.path.join(directory_path, f))]
-
-    return files_only
+    return [
+        f
+        for f in os.listdir(directory_path)
+        if os.path.isfile(os.path.join(directory_path, f))
+    ]
 
 
 def exit_system_safely():
@@ -64,7 +65,7 @@ def run_command(command):
 
         return p.returncode, out, err
     except Exception as e:
-        return 1, "Command not found: %s" % command, None
+        return 1, f"Command not found: {command}", None
 
 
 def get_terraform_lock_file():

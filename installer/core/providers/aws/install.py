@@ -57,8 +57,9 @@ class Install(BaseAction):
             terraform_with_targets (boolean): If partial install is to be done (if --tags is supplied)
             dry_run (boolean): Decides whether original install should be done
         """
-        error_response = self.validate_arguments(resources, terraform_with_targets)
-        if error_response:
+        if error_response := self.validate_arguments(
+            resources, terraform_with_targets
+        ):
             return self.exit_with_validation_errors(error_response)
 
         if self.validate_resources(resources):
@@ -220,8 +221,7 @@ class Install(BaseAction):
         if not self.executed_with_error and self.terraform_outputs:
             display_op_list = []
             for resource in resources:
-                output = resource.render_output(self.terraform_outputs)
-                if output:
+                if output := resource.render_output(self.terraform_outputs):
                     display_op_list.append(output)
 
             self.display_op_msg(display_op_list)
@@ -233,7 +233,7 @@ class Install(BaseAction):
             os.mkdir(scripts_and_files_dir)
         except OSError as e:
             if e.errno != self.FOLDER_EXISTS_ERROR_NO:
-                print("Creation of the directory %s failed" % scripts_and_files_dir)
+                print(f"Creation of the directory {scripts_and_files_dir} failed")
                 raise Exception('Files direcotry creation in Terraform folder failed')
 
     def _copy_supporting_files(self):
@@ -295,7 +295,7 @@ class Install(BaseAction):
             output_count = prev_output_count = 0
 
             while self.install_statuses.get('execution_finished') > self.current_install_status and self.terraform_thread.isAlive():
-                counter = False if counter else True
+                counter = not counter
                 duration = self.CYAN_ANSI + self.get_duration(datetime.now() - start_time) + self.END_ANSI
                 if counter:
                     try:
@@ -307,9 +307,9 @@ class Install(BaseAction):
                 else:
                     output_count = prev_output_count
 
-                duration_msg = ", Time elapsed: %s" % duration
+                duration_msg = f", Time elapsed: {duration}"
                 count_msg = self.GREEN_ANSI + str(output_count) + "/" + str(self.total_resources_count) + self.END_ANSI
-                message = "Resources created: " + count_msg + duration_msg
+                message = f"Resources created: {count_msg}{duration_msg}"
                 self.show_progress_message(message, 1.5)
 
             self.clear_status_dir_files()

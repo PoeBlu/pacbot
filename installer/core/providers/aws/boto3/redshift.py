@@ -38,7 +38,7 @@ def check_redshift_cluster_exists(cluster_identifier, access_key, secret_key, re
         response = client.describe_clusters(
             ClusterIdentifier=cluster_identifier
         )
-        return True if len(response['Clusters']) else False
+        return bool(len(response['Clusters']))
     except:
         return False
 
@@ -61,7 +61,7 @@ def check_redshift_parameter_group_exists(name, access_key, secret_key, region):
         response = client.describe_cluster_parameter_groups(
             ParameterGroupName=name
         )
-        return True if len(response['ParameterGroups']) else False
+        return bool(len(response['ParameterGroups']))
     except:
         return False
 
@@ -84,6 +84,6 @@ def check_redshift_subnet_group_exists(name, access_key, secret_key, region):
         response = client.describe_cluster_subnet_groups(
             ClusterSubnetGroupName=name
         )
-        return True if len(response['ClusterSubnetGroups']) else False
+        return bool(len(response['ClusterSubnetGroups']))
     except:
         return False

@@ -43,7 +43,7 @@ class MySQLDatabase(RDSResource):
 
     @classmethod
     def get_rds_info(cls):
-        info = "%s:%s" % (cls.get_input_attr('username'), cls.get_input_attr('password'))
+        info = f"{cls.get_input_attr('username')}:{cls.get_input_attr('password')}"
 
         return base64.b64encode(info.encode()).decode()
 
@@ -52,7 +52,7 @@ class MySQLDatabase(RDSResource):
         rds_endpoint = cls.get_output_attr('endpoint')
         db_name = cls.get_input_attr('name')
 
-        return "jdbc:mysql://%s/%s" % (rds_endpoint, db_name)
+        return f"jdbc:mysql://{rds_endpoint}/{db_name}"
 
     def render_output(self, outputs):
         if self.resource_in_tf_output(outputs):
@@ -68,4 +68,6 @@ class MySQLDatabase(RDSResource):
             "rds.amazonaws.com",
             Settings.RESOURCE_DESCRIPTION)
 
-        SysLog().write_debug_log("RDS IAM Service Linked role creation: Status:%s, Message: %s" % (str(status), msg))
+        SysLog().write_debug_log(
+            f"RDS IAM Service Linked role creation: Status:{str(status)}, Message: {msg}"
+        )

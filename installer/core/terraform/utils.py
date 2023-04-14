@@ -52,10 +52,12 @@ def get_terraform_resource_path(resource_class):
     Returns:
         resource_path (path): terraform file path
     """
-    resource_path = ".".join(
-        [resource_class.resource_instance_name, resource_class.get_resource_id()])
-
-    return resource_path
+    return ".".join(
+        [
+            resource_class.resource_instance_name,
+            resource_class.get_resource_id(),
+        ]
+    )
 
 
 def get_formatted_resource_attr_value(arg_value, attrs):
@@ -131,7 +133,7 @@ def _get_resource_status_file_name(resource_id, status):
     Returns:
         str: Abs path of the status file as string
     """
-    filename = "op." + resource_id + ".pyform." + str(status)
+    filename = f"op.{resource_id}.pyform.{str(status)}"
     file_path = os.path.join(Settings.OUTPUT_STATUS_DIR, filename)
 
     return str(file_path)

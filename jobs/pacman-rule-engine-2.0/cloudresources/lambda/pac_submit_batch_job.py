@@ -46,16 +46,16 @@ def processJsonInput(event,context):
 def submit_to_batch(jobQueue,jobName,jobDefinition,containerOverrides,parameters):
 
     try:
-            # Submit a Batch Job
-            response = batch.submit_job(jobQueue=jobQueue, jobName=jobName, jobDefinition=jobDefinition,
-                                        containerOverrides=containerOverrides, parameters=parameters)
+        # Submit a Batch Job
+        response = batch.submit_job(jobQueue=jobQueue, jobName=jobName, jobDefinition=jobDefinition,
+                                    containerOverrides=containerOverrides, parameters=parameters)
             # Log response from AWS Batch
-            print("Response: " + json.dumps(response, indent=2))
-            # Return the jobId
-            jobId = response['jobId']
-            return {
-                'jobId': jobId
-            }
+        print(f"Response: {json.dumps(response, indent=2)}")
+        # Return the jobId
+        jobId = response['jobId']
+        return {
+            'jobId': jobId
+        }
     except Exception as e:
             print(e)
             message = 'Error submitting Batch Job'

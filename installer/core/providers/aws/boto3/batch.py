@@ -55,10 +55,13 @@ def check_compute_env_exists(compute_env, access_key, secret_key, region):
     Returns:
         Boolean: True if env exists else False
     """
-    if len(get_compute_environments([compute_env], access_key, secret_key, region)):
-        return True
-    else:
-        return False
+    return bool(
+        len(
+            get_compute_environments(
+                [compute_env], access_key, secret_key, region
+            )
+        )
+    )
 
 
 def get_job_definitions(job_def_name, access_key, secret_key, region):
@@ -98,7 +101,7 @@ def check_job_definition_exists(job_def_name, access_key, secret_key, region):
     client = get_batch_client(access_key, secret_key, region)
     try:
         job_definitions = get_job_definitions(job_def_name, access_key, secret_key, region)
-        return True if len(job_definitions) else False
+        return bool(len(job_definitions))
     except:
         return False
 
@@ -121,6 +124,6 @@ def check_job_queue_exists(job_queue_name, access_key, secret_key, region):
         response = client.describe_job_queues(
             jobQueues=[job_queue_name],
         )
-        return True if len(response['jobQueues']) else False
+        return bool(len(response['jobQueues']))
     except:
         return False

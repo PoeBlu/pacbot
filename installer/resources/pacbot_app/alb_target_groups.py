@@ -23,39 +23,60 @@ class BaseTG:
     matcher = HEALTH_CHECK_MATCHING_LIST
 
 
+
+
 class ConfigALBTargetGroup(ALBTargetGroupResource, BaseTG):
     name = "config"
-    path = PATH_PREFIX + "config"
+    path = f"{PATH_PREFIX}config"
+
+
+
 
 
 class AdminALBTargetGroup(ALBTargetGroupResource, BaseTG):
     name = "admin"
-    path = PATH_PREFIX + "admin/api.html"
+    path = f"{PATH_PREFIX}admin/api.html"
+
+
+
 
 
 class ComplianceALBTargetGroup(ALBTargetGroupResource, BaseTG):
     name = "compliance"
-    path = PATH_PREFIX + "compliance/api.html"
+    path = f"{PATH_PREFIX}compliance/api.html"
+
+
+
 
 
 class NotificationsALBTargetGroup(ALBTargetGroupResource, BaseTG):
     name = "notifications"
-    path = PATH_PREFIX + "notifications/api.html"
+    path = f"{PATH_PREFIX}notifications/api.html"
+
+
+
 
 
 class StatisticsALBTargetGroup(ALBTargetGroupResource, BaseTG):
     name = "statistics"
-    path = PATH_PREFIX + "statistics/api.html"
+    path = f"{PATH_PREFIX}statistics/api.html"
+
+
+
 
 
 class AssetALBTargetGroup(ALBTargetGroupResource, BaseTG):
     name = "asset"
-    path = PATH_PREFIX + "asset/api.html"
+    path = f"{PATH_PREFIX}asset/api.html"
+
+
+
 
 
 class AuthALBTargetGroup(ALBTargetGroupResource, BaseTG):
     name = "auth"
-    path = PATH_PREFIX + "auth/api.html"
+    path = f"{PATH_PREFIX}auth/api.html"
+
 
 
 class NginxALBTargetGroup(ALBTargetGroupResource, BaseTG):

@@ -58,28 +58,32 @@ class SystemValidation(MsgMixin, metaclass=ABCMeta):
 
         if Settings.get('VPC', None):
             vpc_ids = [Settings.VPC['ID']]
-            if Settings.VPC.get('SUBNETS', None):
-                if Settings.get('REQUIRE_SUBNETS_ON_DIFFERENT_ZONE', False):
-                    subnet_ids = Settings.VPC['SUBNETS']
-                    try:
-                        valid_subnets = vpc.get_vpc_subnets(
-                            Settings.AWS_ACCESS_KEY,
-                            Settings.AWS_SECRET_KEY,
-                            Settings.AWS_REGION,
-                            vpc_ids
-                        )
-                    except Exception as e:
-                        self.error_message = str(e) + "\n\t" + K.CORRECT_VPC_MSG
-                        return K.NOT_VALID
+            if Settings.VPC.get('SUBNETS', None) and Settings.get(
+                'REQUIRE_SUBNETS_ON_DIFFERENT_ZONE', False
+            ):
+                subnet_ids = Settings.VPC['SUBNETS']
+                try:
+                    valid_subnets = vpc.get_vpc_subnets(
+                        Settings.AWS_ACCESS_KEY,
+                        Settings.AWS_SECRET_KEY,
+                        Settings.AWS_REGION,
+                        vpc_ids
+                    )
+                except Exception as e:
+                    self.error_message = str(e) + "\n\t" + K.CORRECT_VPC_MSG
+                    return K.NOT_VALID
 
-                    current_subnets = [subnet for subnet in valid_subnets if subnet['SubnetId'] in subnet_ids]
-                    if len(current_subnets) != len(subnet_ids):
-                        self.error_message = K.INVALID_SUBNETS
-                        return K.NOT_VALID
+                current_subnets = [subnet for subnet in valid_subnets if subnet['SubnetId'] in subnet_ids]
+                if len(current_subnets) != len(subnet_ids):
+                    self.error_message = K.INVALID_SUBNETS
+                    return K.NOT_VALID
 
-                    if len(set([subnet['AvailabilityZone'] for subnet in current_subnets])) < 2:
-                        self.error_message = K.INVALID_SUBNET_ZONES
-                        return K.NOT_VALID
+                if (
+                    len({subnet['AvailabilityZone'] for subnet in current_subnets})
+                    < 2
+                ):
+                    self.error_message = K.INVALID_SUBNET_ZONES
+                    return K.NOT_VALID
 
         return K.VALID
 
@@ -92,9 +96,7 @@ class SystemValidation(MsgMixin, metaclass=ABCMeta):
         """
         access_key, secret_key = Settings.AWS_ACCESS_KEY, Settings.AWS_SECRET_KEY
         current_aws_user = iam.get_current_user(access_key, secret_key)
-        user_name = current_aws_user.user_name
-
-        if user_name:
+        if user_name := current_aws_user.user_name:
             # warning_message = "Policies (" + ", ".join(Settings.AWS_POLICIES_REQUIRED) + ") are required"
             # self.show_step_inner_warning(warning_message)
 
@@ -106,10 +108,7 @@ class SystemValidation(MsgMixin, metaclass=ABCMeta):
 
             yes_or_no = input("\n\t%s: " % self._input_message_in_color(K.POLICY_YES_NO))
 
-            if yes_or_no.lower() == "yes":
-                return True
-
-            return False
+            return yes_or_no.lower() == "yes"
         elif "root" in current_aws_user.arn:
             return True
         else:

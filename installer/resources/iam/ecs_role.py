@@ -39,9 +39,12 @@ class ECSRole(iam.IAMRoleResource):
     force_detach_policies = True
 
 
+
+
 class ECSRoleInstanceProfile(iam.IAMInstanceProfileResource):
-    name = ECSRole.name + '_profile'
+    name = f'{ECSRole.name}_profile'
     role = ECSRole.get_output_attr('name')
+
 
 
 class ECSReadOnlyAccessPolicyAttach(iam.IAMRolePolicyAttachmentResource):

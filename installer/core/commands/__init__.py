@@ -37,7 +37,9 @@ class BaseCommand(metaclass=ABCMeta):
         if self.resource_tags_list:
             self.terraform_with_targets = True
 
-        self.dry_run = True if any([x[1] for x in args if x[0] == "dry-run"]) else self.dry_run
+        self.dry_run = (
+            True if any(x[1] for x in args if x[0] == "dry-run") else self.dry_run
+        )
 
     def get_complete_resources(self, input_instance, need_instance=True):
         """
@@ -47,9 +49,9 @@ class BaseCommand(metaclass=ABCMeta):
             resources_to_process (list): List of all resources
         """
         resource_keys_to_process = self.get_resource_keys_to_process(None, None)
-        resources_to_process = self.get_resources_from_the_keys(resource_keys_to_process, input_instance, need_instance)
-
-        return resources_to_process
+        return self.get_resources_from_the_keys(
+            resource_keys_to_process, input_instance, need_instance
+        )
 
     def get_resources_to_process(self, input_instance, need_instance=True):
         """
@@ -63,9 +65,9 @@ class BaseCommand(metaclass=ABCMeta):
             resources_to_process (list): List of resources
         """
         resource_keys_to_process = self.get_resource_keys_to_process(self.resource_tags_list, self.category_field_name)
-        resources_to_process = self.get_resources_from_the_keys(resource_keys_to_process, input_instance, need_instance)
-
-        return resources_to_process
+        return self.get_resources_from_the_keys(
+            resource_keys_to_process, input_instance, need_instance
+        )
 
     def get_resources_with_given_tags(self, input_instance, tags_list):
         """
@@ -79,9 +81,9 @@ class BaseCommand(metaclass=ABCMeta):
             tagged_resources (list): List of resources
         """
         tagged_resource_keys = self.get_resource_keys_to_process(tags_list, self.category_field_name)
-        tagged_resources = self.get_resources_from_the_keys(tagged_resource_keys, input_instance, True)
-
-        return tagged_resources
+        return self.get_resources_from_the_keys(
+            tagged_resource_keys, input_instance, True
+        )
 
     def get_resources_from_the_keys(self, resource_keys_to_process, input_instance, need_instance):
         """
@@ -93,22 +95,24 @@ class BaseCommand(metaclass=ABCMeta):
         resources_to_process = []
         for resource in resource_keys_to_process:
             try:
-                resource = Settings.RESOURCES_FOLDER + '.' + resource
+                resource = f'{Settings.RESOURCES_FOLDER}.{resource}'
                 resource_module = importlib.import_module(resource)
             except ImportError:
-                print("Resource classes could not be found for module: %s" % str(resource))
+                print(f"Resource classes could not be found for module: {str(resource)}")
                 raise Exception("Resource classes could not be found for module, %s", str(resource))
             except Exception as e:
-                print("Error: %s" % str(e))
-                raise Exception("Error: %s" % str(e))
+                print(f"Error: {str(e)}")
+                raise Exception(f"Error: {str(e)}")
 
             for name, obj_class in inspect.getmembers(resource_module, inspect.isclass):
-                if obj_class.__module__ == resource:  # To collect Resource Classes defined only in the resource file
-                    if BaseTerraformResource in inspect.getmro(obj_class):
-                        if need_instance:
-                            resources_to_process.append(obj_class(input_instance))  # Create instance of that class
-                        else:
-                            resources_to_process.append(obj_class)
+                if (
+                    obj_class.__module__ == resource
+                    and BaseTerraformResource in inspect.getmro(obj_class)
+                ):
+                    if need_instance:
+                        resources_to_process.append(obj_class(input_instance))  # Create instance of that class
+                    else:
+                        resources_to_process.append(obj_class)
 
         return resources_to_process
 
@@ -122,10 +126,12 @@ class BaseCommand(metaclass=ABCMeta):
         resource_keys_to_process = []
         if resource_tags_list:
             for resource, attrs in Settings.PROCESS_RESOURCES.items():
-                for attr, val in attrs.items():
-                    if attr == category_field_name:
-                        if any(x in val for x in resource_tags_list):
-                            resource_keys_to_process.append(resource)
+                resource_keys_to_process.extend(
+                    resource
+                    for attr, val in attrs.items()
+                    if attr == category_field_name
+                    and any(x in val for x in resource_tags_list)
+                )
         else:
             resource_keys_to_process = Settings.PROCESS_RESOURCES.keys()
 

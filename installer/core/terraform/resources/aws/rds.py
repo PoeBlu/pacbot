@@ -47,15 +47,16 @@ class RDSResource(TerraformResource):
             checked_details (dict): Status of the existence check
         """
         checked_details = {'attr': "identifier", 'value': self.get_input_attr('identifier')}
-        exists = False
-
-        if not self.resource_in_tf_output(tf_outputs):
-            exists = rds.check_rds_instance_exists(
+        exists = (
+            False
+            if self.resource_in_tf_output(tf_outputs)
+            else rds.check_rds_instance_exists(
                 checked_details['value'],
                 input.aws_access_key,
                 input.aws_secret_key,
-                input.aws_region)
-
+                input.aws_region,
+            )
+        )
         return exists, checked_details
 
 
@@ -92,15 +93,16 @@ class RDSOptionGroupResource(TerraformResource):
             checked_details (dict): Status of the existence check
         """
         checked_details = {'attr': "name", 'value': self.get_input_attr('name')}
-        exists = False
-
-        if not self.resource_in_tf_output(tf_outputs):
-            exists = rds.check_rds_option_group_exists(
+        exists = (
+            False
+            if self.resource_in_tf_output(tf_outputs)
+            else rds.check_rds_option_group_exists(
                 checked_details['value'],
                 input.aws_access_key,
                 input.aws_secret_key,
-                input.aws_region)
-
+                input.aws_region,
+            )
+        )
         return exists, checked_details
 
 
@@ -136,15 +138,16 @@ class RDSParameterGroupResource(TerraformResource):
             checked_details (dict): Status of the existence check
         """
         checked_details = {'attr': "name", 'value': self.get_input_attr('name')}
-        exists = False
-
-        if not self.resource_in_tf_output(tf_outputs):
-            exists = rds.check_rds_parameter_group_exists(
+        exists = (
+            False
+            if self.resource_in_tf_output(tf_outputs)
+            else rds.check_rds_parameter_group_exists(
                 checked_details['value'],
                 input.aws_access_key,
                 input.aws_secret_key,
-                input.aws_region)
-
+                input.aws_region,
+            )
+        )
         return exists, checked_details
 
 
@@ -180,13 +183,14 @@ class RDSSubnetGroupResource(TerraformResource):
             checked_details (dict): Status of the existence check
         """
         checked_details = {'attr': "name", 'value': self.get_input_attr('name')}
-        exists = False
-
-        if not self.resource_in_tf_output(tf_outputs):
-            exists = rds.check_rds_subnet_group_exists(
+        exists = (
+            False
+            if self.resource_in_tf_output(tf_outputs)
+            else rds.check_rds_subnet_group_exists(
                 checked_details['value'],
                 input.aws_access_key,
                 input.aws_secret_key,
-                input.aws_region)
-
+                input.aws_region,
+            )
+        )
         return exists, checked_details

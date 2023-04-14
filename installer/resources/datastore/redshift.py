@@ -15,12 +15,14 @@ class RedshiftParameterGroup(redshift.RedshiftParameterGroupResource):
     ]
 
 
+
+
 class RedshiftSubnetGroup(redshift.RedshiftSubnetGroupResource):
     name = ""
     subnet_ids = Settings.get('VPC')['SUBNETS']
     tags = [
-        {'environment': Settings.RESOURCE_NAME_PREFIX + "redshift"},
-        {'Name': Settings.RESOURCE_NAME_PREFIX}
+        {'environment': f"{Settings.RESOURCE_NAME_PREFIX}redshift"},
+        {'Name': Settings.RESOURCE_NAME_PREFIX},
     ]
 
 
@@ -40,7 +42,7 @@ class RedshiftCluster(redshift.RedshiftClusterResource):
 
     @classmethod
     def get_redshift_info(cls):
-        info = "%s:%s" % (cls.get_input_attr('master_username'), cls.get_input_attr('master_password'))
+        info = f"{cls.get_input_attr('master_username')}:{cls.get_input_attr('master_password')}"
 
         return base64.b64encode(info.encode()).decode()  # Since base64 takes up only bytes we need to encode then decode
 
@@ -49,7 +51,7 @@ class RedshiftCluster(redshift.RedshiftClusterResource):
         endpoint = cls.get_output_attr('endpoint')
         dbname = cls.get_input_attr('database_name')
 
-        return "jdbc:redshift://%s/%s" % (endpoint, dbname)
+        return f"jdbc:redshift://{endpoint}/{dbname}"
 
     def render_output(self, outputs):
         if self.resource_in_tf_output(outputs):

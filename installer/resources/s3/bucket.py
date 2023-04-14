@@ -5,10 +5,13 @@ from resources.iam.base_role import BaseRole
 from resources.iam.ecs_role import ECSRole
 
 
+
+
 class BucketStorage(S3Bucket):
-    bucket = "data-" + Settings.AWS_REGION + "-" + Settings.AWS_ACCOUNT_ID
+    bucket = f"data-{Settings.AWS_REGION}-{Settings.AWS_ACCOUNT_ID}"
     acl = "private"
     force_destroy = True
+
 
 
 class S3ResourcePolicyDocument(iam.IAMPolicyDocumentData):

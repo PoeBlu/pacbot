@@ -38,7 +38,7 @@ def check_rds_instance_exists(instance_identifier, access_key, secret_key, regio
         response = client.describe_db_instances(
             DBInstanceIdentifier=instance_identifier
         )
-        return True if len(response['DBInstances']) else False
+        return bool(len(response['DBInstances']))
     except:
         return False
 
@@ -61,7 +61,7 @@ def check_rds_option_group_exists(name, access_key, secret_key, region):
         response = client.describe_option_groups(
             OptionGroupName=name
         )
-        return True if len(response['OptionGroupsList']) else False
+        return bool(len(response['OptionGroupsList']))
     except:
         return False
 
@@ -84,7 +84,7 @@ def check_rds_parameter_group_exists(name, access_key, secret_key, region):
         response = client.describe_db_parameter_groups(
             DBParameterGroupName=name
         )
-        return True if len(response['DBParameterGroups']) else False
+        return bool(len(response['DBParameterGroups']))
     except:
         return False
 
@@ -107,6 +107,6 @@ def check_rds_subnet_group_exists(name, access_key, secret_key, region):
         response = client.describe_db_subnet_groups(
             DBSubnetGroupName=name
         )
-        return True if len(response['DBSubnetGroups']) else False
+        return bool(len(response['DBSubnetGroups']))
     except:
         return False

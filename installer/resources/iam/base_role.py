@@ -46,21 +46,20 @@ class BaseAWSSupportPolicyAttach(iam.IAMRolePolicyAttachmentResource):
     policy_arn = "arn:aws:iam::aws:policy/AWSSupportAccess"
 
 
+
+
 class ECSTaskExecutionRolePolicyDocument(iam.IAMPolicyDocumentData):
     statement = [
         {
             "effect": "Allow",
             "actions": ["ecr:*"],
             "resources": [
-                "arn:aws:ecr:%s:%s:repository/%s-*" % (Settings.AWS_REGION, str(Settings.AWS_ACCOUNT_ID), Settings.RESOURCE_NAME_PREFIX)
-            ]
+                f"arn:aws:ecr:{Settings.AWS_REGION}:{str(Settings.AWS_ACCOUNT_ID)}:repository/{Settings.RESOURCE_NAME_PREFIX}-*"
+            ],
         },
-        {
-            "effect": "Allow",
-            "actions": ["logs:*"],
-            "resources": ["*"]
-        }
+        {"effect": "Allow", "actions": ["logs:*"], "resources": ["*"]},
     ]
+
 
 
 class ECSTaskExecutionRolePolicy(iam.IAMRolePolicyResource):

@@ -55,7 +55,7 @@ def check_ecs_cluster_exists(cluster, access_key, secret_key, region):
     client = get_ecs_client(access_key, secret_key, region)
     try:
         response = client.describe_clusters(Names=[cluster])
-        return True if len(response['clusters']) else False
+        return bool(len(response['clusters']))
     except:
         return False
 
@@ -76,7 +76,7 @@ def check_ecs_task_definition_exists(task_definition, access_key, secret_key, re
     client = get_ecs_client(access_key, secret_key, region)
     try:
         response = client.describe_task_definition(taskDefinition=task_definition)
-        return True if response['taskDefinition'] else False
+        return bool(response['taskDefinition'])
     except:
         return False
 
@@ -97,7 +97,7 @@ def check_ecs_service_exists(service_name, cluster, access_key, secret_key, regi
     client = get_ecs_client(access_key, secret_key, region)
     try:
         response = client.describe_services(services=[service_name], cluster=cluster)
-        return True if len(response['services']) else False
+        return bool(len(response['services']))
     except:
         return False
 

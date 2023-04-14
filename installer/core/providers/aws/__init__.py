@@ -99,7 +99,9 @@ class BaseAction(MsgMixin):
                 if TerraformResource not in inspect.getmro(resource_class):
                     continue  # This means resource is a Variable or Data and not TF Resource
 
-                self.show_progress_start_message("Checking resource existence for %s" % resource_class.__name__)
+                self.show_progress_start_message(
+                    f"Checking resource existence for {resource_class.__name__}"
+                )
                 exists, checked_details = resource.check_exists_before(self.input, self.tf_outputs)
                 self.erase_printed_line()
                 self.total_resources_count += 1
@@ -107,7 +109,7 @@ class BaseAction(MsgMixin):
                 if exists:
                     can_continue_installation = False
                     resource_name = resource.resource_instance_name.replace("_", " ").title()
-                    message = "Resource: %s, %s: `%s`" % (resource_name, checked_details['attr'], checked_details['value'])
+                    message = f"Resource: {resource_name}, {checked_details['attr']}: `{checked_details['value']}`"
                     self.show_step_inner_messaage(message, K.EXISTS)
 
             if can_continue_installation:
@@ -179,10 +181,10 @@ class BaseAction(MsgMixin):
 
                     if key in key_msg:
                         key_msg[key].append(
-                            "Depends on resource is not found: %s" % resource_class.__name__)
+                            f"Depends on resource is not found: {resource_class.__name__}"
+                        )
                     else:
-                        key_msg[key] = ["Depends on resource is not found: %s" %
-                                        resource_class.__name__]
+                        key_msg[key] = [f"Depends on resource is not found: {resource_class.__name__}"]
 
         return key_msg
 

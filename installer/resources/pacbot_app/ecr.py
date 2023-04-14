@@ -21,7 +21,9 @@ class APIEcrRepository(ECRRepository):
             "ecs.amazonaws.com",
             Settings.RESOURCE_DESCRIPTION)
 
-        SysLog().write_debug_log("ECS IAM Service Linked role creation: Status:%s, Message: %s" % (str(status), msg))
+        SysLog().write_debug_log(
+            f"ECS IAM Service Linked role creation: Status:{str(status)}, Message: {msg}"
+        )
 
 
 class UIEcrRepository(ECRRepository):
@@ -48,7 +50,7 @@ class BaseDockerImageBuild:
             get_terraform_scripts_dir(),
             self.image_creation_script)
 
-        local_execs = [
+        return [
             {
                 'local-exec': {
                     'command': docker_creation_script,
@@ -56,15 +58,15 @@ class BaseDockerImageBuild:
                         'ECR_REPOSITORY': self.ecr_repo,
                         'PROVIDER_FILE': get_terraform_provider_file(),
                         'DOCKER_FILE': 'dockerfile',
-                        'DOCKER_FILE_DIR': os.path.join(self.dest_dir, self.docker_dir),
-                        'LOG_FILE': os.path.join(Settings.LOG_DIR, 'debug.log')
+                        'DOCKER_FILE_DIR': os.path.join(
+                            self.dest_dir, self.docker_dir
+                        ),
+                        'LOG_FILE': os.path.join(Settings.LOG_DIR, 'debug.log'),
                     },
-                    'interpreter': [Settings.PYTHON_INTERPRETER]
+                    'interpreter': [Settings.PYTHON_INTERPRETER],
                 }
             }
         ]
-
-        return local_execs
 
     def add_vaues_for_bucket_placeholder(self):
         input_sh_file = os.path.join(self.dest_dir, self.docker_dir, "entrypoint.sh.tpl")

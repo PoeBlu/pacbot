@@ -138,9 +138,7 @@ class SysLog:
             header (str): A text to be printed on the header
         """
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        header = "\n%s\nDateTime: %s \nMessage: %s \n" % ("*" * 100, now, head_msg)
-
-        return header
+        return "\n%s\nDateTime: %s \nMessage: %s \n" % ("*" * 100, now, head_msg)
 
     def get_terraform_install_log_file(self):
         """

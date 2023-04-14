@@ -15,23 +15,28 @@ from resources.pacbot_app.alb import ApplicationLoadBalancer
 import sys
 
 
+
+
 class RuleEngineLambdaFunction(LambdaFunctionResource):
     function_name = "ruleengine"
     role = LambdaRole.get_output_attr('arn')
-    handler = RULE_ENGINE_JOB_FILE_NAME + ".lambda_handler"
+    handler = f"{RULE_ENGINE_JOB_FILE_NAME}.lambda_handler"
     runtime = "python2.7"
     s3_bucket = BucketStorage.get_output_attr('bucket')
     s3_key = UploadLambdaRuleEngineZipFile.get_output_attr('id')
     environment = {
         'variables': {
             'JOB_QUEUE': RuleEngineJobQueue.get_input_attr('name'),
-            'JOB_DEFINITION': SubmitAndRuleEngineJobDefinition.get_input_attr('name'),
+            'JOB_DEFINITION': SubmitAndRuleEngineJobDefinition.get_input_attr(
+                'name'
+            ),
             'CONFIG_CREDENTIALS': "dXNlcjpwYWNtYW4=",
-            'CONFIG_SERVICE_URL': ApplicationLoadBalancer.get_http_url() + "/api/config/rule/prd/latest"
+            'CONFIG_SERVICE_URL': f"{ApplicationLoadBalancer.get_http_url()}/api/config/rule/prd/latest",
         }
     }
 
     DEPENDS_ON = [SubmitAndRuleEngineJobDefinition, RuleEngineJobQueue]
+
 
 
 class RulesListVariable(TerraformVariable):
@@ -109,8 +114,10 @@ class RuleEngineCloudWatchEventTargets(CloudWatchEventTargetResource):
     DEPENDS_ON = [RuleEngineEventRules]
 
 
+
+
 class EventRulesLambdaPermissions(LambdaPermission):
-    statement_id = "sid-" + Settings.AWS_ACCOUNT_ID
+    statement_id = f"sid-{Settings.AWS_ACCOUNT_ID}"
     action = "lambda:InvokeFunction"
     function_name = RuleEngineLambdaFunction.get_output_attr('function_name')
     principal = "events.amazonaws.com"

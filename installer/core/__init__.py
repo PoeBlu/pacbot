@@ -19,7 +19,7 @@ def autoload(config_path, sys_args):
 
     else:
         print("#" * 60)
-        print("%s!!!!!!! WARNING !!!!!!!" % (" " * 10))
+        print(f'{" " * 10}!!!!!!! WARNING !!!!!!!')
         print("#" * 60)
         print("This system works with python version 3.5 or greater.")
         print("Please create virtualenv with python3 or upgrade python\n\n")

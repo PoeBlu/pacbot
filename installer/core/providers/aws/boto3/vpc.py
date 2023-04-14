@@ -83,6 +83,6 @@ def check_security_group_exists(group_name, vpc_id, access_key, secret_key, regi
                 {'Name': "vpc-id", 'Values': [vpc_id]},
             ]
         )
-        return True if len(response['SecurityGroups']) else False
+        return bool(len(response['SecurityGroups']))
     except:
         return False

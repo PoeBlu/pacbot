@@ -36,15 +36,16 @@ class CloudWatchEventRuleResource(TerraformResource):
             checked_details (dict): Status of the existence check
         """
         checked_details = {'attr': "name", 'value': self.get_input_attr('name')}
-        exists = False
-
-        if not self.resource_in_tf_output(tf_outputs):
-            exists = cloudwatch_event.check_rule_exists(
+        exists = (
+            False
+            if self.resource_in_tf_output(tf_outputs)
+            else cloudwatch_event.check_rule_exists(
                 checked_details['value'],
                 input.aws_access_key,
                 input.aws_secret_key,
-                input.aws_region)
-
+                input.aws_region,
+            )
+        )
         return exists, checked_details
 
 
@@ -88,15 +89,16 @@ class CloudWatchLogGroupResource(TerraformResource):
             checked_details (dict): Status of the existence check
         """
         checked_details = {'attr': "name", 'value': self.get_input_attr('name')}
-        exists = False
-
-        if not self.resource_in_tf_output(tf_outputs):
-            exists = cloudwatch_log.check_log_group_exists(
+        exists = (
+            False
+            if self.resource_in_tf_output(tf_outputs)
+            else cloudwatch_log.check_log_group_exists(
                 checked_details['value'],
                 input.aws_access_key,
                 input.aws_secret_key,
-                input.aws_region)
-
+                input.aws_region,
+            )
+        )
         return exists, checked_details
 
 

@@ -30,26 +30,25 @@ class ContainerDefinitions:
         memory = 1024 if container_name == "nginx" else 3072
         return {
             'name': container_name,
-            "image": self.ui_image if container_name == 'nginx' else self.api_image,
+            "image": self.ui_image
+            if container_name == 'nginx'
+            else self.api_image,
             "essential": True,
             "entrypoint": ["sh", "-c"],
             "command": ["sh /entrypoint.sh"],
-            "portMappings": [
-                {
-                    "containerPort": 80,
-                    "hostPort": 80
-                }
-            ],
+            "portMappings": [{"containerPort": 80, "hostPort": 80}],
             "memory": memory,
             "networkMode": "awsvpc",
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": self.ui_cw_log_group if container_name == 'nginx' else self.api_cw_log_group,
+                    "awslogs-group": self.ui_cw_log_group
+                    if container_name == 'nginx'
+                    else self.api_cw_log_group,
                     "awslogs-region": AwsRegion.get_output_attr('name'),
-                    "awslogs-stream-prefix": Settings.RESOURCE_NAME_PREFIX + "-" + container_name
-                }
-            }
+                    "awslogs-stream-prefix": f"{Settings.RESOURCE_NAME_PREFIX}-{container_name}",
+                },
+            },
         }
 
     def get_container_definitions(self, container_name):
@@ -60,8 +59,7 @@ class ContainerDefinitions:
             container_definitions (json): Josn data of complete Container definitions
         """
         definitions = self.get_container_definitions_without_env_vars(container_name)
-        env_vars = self._get_env_vars_for_container_service(container_name)
-        if env_vars:
+        if env_vars := self._get_env_vars_for_container_service(container_name):
             definitions['environment'] = env_vars
 
         return json.dumps([definitions])
@@ -75,7 +73,8 @@ class ContainerDefinitions:
         """
         def function_not_found():
             return None
-        fun_name = "get_%s_container_env_vars" % container_name.replace('-', '_')
+
+        fun_name = f"get_{container_name.replace('-', '_')}_container_env_vars"
         call_fun = getattr(self, fun_name, function_not_found)
 
         return call_fun()

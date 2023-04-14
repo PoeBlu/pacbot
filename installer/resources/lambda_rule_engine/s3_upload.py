@@ -8,9 +8,12 @@ import os
 RULE_ENGINE_JOB_FILE_NAME = "pacbot-SubmitRuleExecutionJob"
 
 
+
+
 class UploadLambdaRuleEngineZipFile(S3BucketObject):
     bucket = BucketStorage.get_output_attr('bucket')
-    key = Settings.RESOURCE_NAME_PREFIX + "/" + RULE_ENGINE_JOB_FILE_NAME + ".zip"
+    key = f"{Settings.RESOURCE_NAME_PREFIX}/{RULE_ENGINE_JOB_FILE_NAME}.zip"
     source = os.path.join(
         get_terraform_scripts_and_files_dir(),
-        RULE_ENGINE_JOB_FILE_NAME + ".zip")
+        f"{RULE_ENGINE_JOB_FILE_NAME}.zip",
+    )

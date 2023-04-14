@@ -15,7 +15,7 @@ class ApplicationLoadBalancer(LoadBalancerResource):
     @classmethod
     def get_http_url(cls):
         pacbot_domain = cls.get_output_attr('dns_name')
-        return "%s://%s" % ("http", pacbot_domain)
+        return f"http://{pacbot_domain}"
 
         # TODO: Replace with this once dev team fix https issue
         # pacbot_domain = Settings.get('PACBOT_DOMAIN', None)
@@ -27,12 +27,12 @@ class ApplicationLoadBalancer(LoadBalancerResource):
         pacbot_domain = Settings.get('PACBOT_DOMAIN', None)
         pacbot_domain = pacbot_domain if pacbot_domain else cls.get_output_attr('dns_name')
 
-        return "%s://%s" % (Settings.get('ALB_PROTOCOL', "HTTP").lower(), pacbot_domain)
+        return f"""{Settings.get('ALB_PROTOCOL', "HTTP").lower()}://{pacbot_domain}"""
 
     @classmethod
     def get_api_base_url(cls):
         pacbot_domain = cls.get_output_attr('dns_name')
-        return "%s://%s/api" % ("http", pacbot_domain)
+        return f"http://{pacbot_domain}/api"
 
         # TODO: Replace with this once dev team fix https issue
         # pacbot_domain = Settings.get('PACBOT_DOMAIN', None)
@@ -42,11 +42,11 @@ class ApplicationLoadBalancer(LoadBalancerResource):
     @classmethod
     def get_api_version_url(cls, service):
         version_url = cls.get_api_server_url(service)
-        return version_url if service == "auth" else version_url + "/v1"
+        return version_url if service == "auth" else f"{version_url}/v1"
 
     @classmethod
     def get_api_server_url(cls, service):
-        return "%s/%s" % (cls.get_api_base_url(), service)
+        return f"{cls.get_api_base_url()}/{service}"
 
     def _get_printable_abs_url(self, dns_name):
         """
@@ -61,7 +61,7 @@ class ApplicationLoadBalancer(LoadBalancerResource):
         pacbot_domain = Settings.get('PACBOT_DOMAIN', None)
         pacbot_domain = pacbot_domain if pacbot_domain else dns_name
 
-        return "%s://%s" % (Settings.get('ALB_PROTOCOL', "HTTP").lower(), pacbot_domain)
+        return f"""{Settings.get('ALB_PROTOCOL', "HTTP").lower()}://{pacbot_domain}"""
 
     def render_output(self, outputs):
         if self.resource_in_tf_output(outputs):

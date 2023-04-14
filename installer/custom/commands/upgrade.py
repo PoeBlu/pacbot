@@ -53,12 +53,18 @@ class Upgrade(BaseCommand):
         Args:
             provider (string): Provider name like AWS or Azure etc
         """
-        self.validation_class = getattr(importlib.import_module(
-            provider.provider_module + '.validate'), 'SystemInstallValidation')
-        self.input_class = getattr(importlib.import_module(
-            provider.provider_module + '.input'), 'SystemInstallInput')
-        self.install_class = getattr(importlib.import_module(
-            provider.provider_module + '.install'), 'Install')
+        self.validation_class = getattr(
+            importlib.import_module(f'{provider.provider_module}.validate'),
+            'SystemInstallValidation',
+        )
+        self.input_class = getattr(
+            importlib.import_module(f'{provider.provider_module}.input'),
+            'SystemInstallInput',
+        )
+        self.install_class = getattr(
+            importlib.import_module(f'{provider.provider_module}.install'),
+            'Install',
+        )
 
     def run_pre_deployment_process(self, resources_to_process):
         """

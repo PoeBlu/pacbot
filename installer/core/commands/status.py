@@ -41,8 +41,6 @@ class Status(BaseCommand, MsgMixin):
         self.initialize_classes(provider)
         input_instance = self.read_input()
         need_instance = False
-        display_op_list = []
-
         resources = self.get_resources_to_process(input_instance)
         terraform_outputs = py_terraform.save_terraform_output()
         status = py_terraform.get_current_status()
@@ -56,18 +54,31 @@ class Status(BaseCommand, MsgMixin):
                     print(self.CYAN_ANSI + "\t\t Resource: %s" % (item.replace("_", " ").title()) + self.RESET_ANSI)
 
             if status:
-                cmd = self.BGREEN_ANSI + "Last Executed Command: " + self.RESET_ANSI + status['last_exec_command']
+                cmd = (
+                    f"{self.BGREEN_ANSI}Last Executed Command: {self.RESET_ANSI}"
+                    + status['last_exec_command']
+                )
                 self.show_inner_inline_message(cmd)
-                cmd_status = self.BGREEN_ANSI + "Last Command Status: " + self.RESET_ANSI + status['status_code'].replace("_STATUS_", " ")
+                cmd_status = (
+                    f"{self.BGREEN_ANSI}Last Command Status: {self.RESET_ANSI}"
+                    + status['status_code'].replace("_STATUS_", " ")
+                )
                 self.show_inner_inline_message(cmd_status)
-                cmd_details = self.BGREEN_ANSI + "Last Command Details: " + self.RESET_ANSI + status['description']
+                cmd_details = (
+                    f"{self.BGREEN_ANSI}Last Command Details: {self.RESET_ANSI}"
+                    + status['description']
+                )
                 self.show_inner_inline_message(cmd_details)
-                cmd_time = self.BGREEN_ANSI + "Command Executed Time: " + self.RESET_ANSI + status['executed_time']
+                cmd_time = (
+                    f"{self.BGREEN_ANSI}Command Executed Time: {self.RESET_ANSI}"
+                    + status['executed_time']
+                )
                 self.show_inner_inline_message(cmd_time)
 
+                display_op_list = []
+
                 for resource in resources:
-                    output = resource.render_output(terraform_outputs)
-                    if output:
+                    if output := resource.render_output(terraform_outputs):
                         display_op_list.append(output)
 
                 self.display_op_msg(display_op_list)
@@ -79,5 +90,7 @@ class Status(BaseCommand, MsgMixin):
         Args:
             provider (str): Provider name based on which corresponding classes are retrieved
         """
-        self.input_class = getattr(importlib.import_module(
-            provider.provider_module + '.input'), 'SystemStatusInput')
+        self.input_class = getattr(
+            importlib.import_module(f'{provider.provider_module}.input'),
+            'SystemStatusInput',
+        )

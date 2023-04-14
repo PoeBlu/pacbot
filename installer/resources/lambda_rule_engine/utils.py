@@ -19,7 +19,7 @@ def get_rule_engine_cloudwatch_rules_var():
         item = {
             'ruleId': variable_dict_input[index]['ruleUUID'],
             'ruleParams': variable_dict_input[index]['ruleParams'],
-            'schedule': "cron(%s * * * ? *)" % str(mod)
+            'schedule': f"cron({str(mod)} * * * ? *)",
         }
 
         variable_dict_input[index] = item

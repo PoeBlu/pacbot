@@ -65,15 +65,19 @@ class Buildpacbot(object):
             files_to_upload = file_names
 
         if not files_to_upload:
-            raise Exception("Email teamplate files are not found in %s" % str(local_folder_path))
+            raise Exception(
+                f"Email teamplate files are not found in {str(local_folder_path)}"
+            )
 
         s3_client = s3 = boto3.client('s3', region_name=region, aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key)
         for file_name in files_to_upload:
             file_path = os.path.join(local_folder_path, file_name)
             extra_args = {'ACL': 'public-read'}  # To make this public
-            key = folder_to_upload + '/' + file_name
+            key = f'{folder_to_upload}/{file_name}'
 
-            self.issue_email_template = '%s/%s/%s' % (s3_client.meta.endpoint_url, bucket, folder_to_upload)  # To be added in config.ts
+            self.issue_email_template = (
+                f'{s3_client.meta.endpoint_url}/{bucket}/{folder_to_upload}'
+            )
 
             s3_client.upload_file(file_path, bucket, key, ExtraArgs=extra_args)
 
@@ -92,16 +96,15 @@ class Buildpacbot(object):
             stdout (str): Response from command prompt
             stderr (str): Error occured if any
         """
-        command = command + ' &>>' + self.maven_build_log
+        command = f'{command} &>>{self.maven_build_log}'
         os.chdir(exec_dir)
         p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         time.sleep(5)
         stdout, stderr = p.communicate()
-        if p.returncode == 1:
-            raise Exception("Error: PacBot maven build failed. Please check log, %s " % str(self.maven_build_log))
-        elif stderr:
-            raise Exception("Error: PacBot maven build failed. Please check log, %s " % str(self.maven_build_log))
-
+        if p.returncode == 1 or stderr:
+            raise Exception(
+                f"Error: PacBot maven build failed. Please check log, {str(self.maven_build_log)} "
+            )
         return stdout, stderr
 
     def build_jar_and_ui_from_code(self, aws_access_key, aws_secret_key, region, bucket, s3_key_prefix):
@@ -123,7 +126,9 @@ class Buildpacbot(object):
 
     def build_api_job_jars(self, working_dir):
         print("Started building the jar...............\n")
-        self.write_to_debug_log("Maven build started...(Please check %s log for more details)" % str(self.maven_build_log))
+        self.write_to_debug_log(
+            f"Maven build started...(Please check {str(self.maven_build_log)} log for more details)"
+        )
 
         stdout, stderr = self.run_bash_command(self.mvn_clean_command, working_dir)
         stdout, stderr = self.run_bash_command(self.mvn_build_command, working_dir)
@@ -146,9 +151,9 @@ class Buildpacbot(object):
                 for jarfile in files:
                     copy_file_from = os.path.join(folder, jarfile)
                     s3_jar_file_key = str(os.path.join(s3_key_prefix, jarfile))
-                    self.write_to_debug_log("JAR File: %s, Uploading to S3..." % s3_jar_file_key)
+                    self.write_to_debug_log(f"JAR File: {s3_jar_file_key}, Uploading to S3...")
                     s3_client.upload_file(copy_file_from, bucket, s3_jar_file_key)
-                    self.write_to_debug_log("JAR File: %s, Uploaded to S3" % s3_jar_file_key)
+                    self.write_to_debug_log(f"JAR File: {s3_jar_file_key}, Uploaded to S3")
 
     def _get_web_app_directory(self):
         return os.path.join(self.codebase_root_dir, "webapp")
@@ -157,16 +162,21 @@ class Buildpacbot(object):
         config_file = os.path.join(webapp_dir, "src", "config", "configurations.ts")
         with open(config_file, 'r') as f:
             lines = f.readlines()
-        shutil.copy2(config_file, config_file + ".original")  # Backup of the original to be used to replace later
+        shutil.copy2(config_file, f"{config_file}.original")
         for idx, line in enumerate(lines):
             if "DEV_BASE_URL: ''" in line or "STG_BASE_URL: ''" in line or "PROD_BASE_URL: ''" in line:
-                lines[idx] = lines[idx].replace("_BASE_URL: ''", "_BASE_URL: '" + self.api_domain_url + "/api'")
+                lines[idx] = lines[idx].replace(
+                    "_BASE_URL: ''", f"_BASE_URL: '{self.api_domain_url}/api'"
+                )
 
             if "AD_AUTHENTICATION: false" in line:
                 lines[idx] = lines[idx].replace("AD_AUTHENTICATION: false", "AD_AUTHENTICATION: true")
 
             if "ISSUE_MAIL_TEMPLATE_URL: ''" in line:
-                lines[idx] = lines[idx].replace("ISSUE_MAIL_TEMPLATE_URL: ''", "ISSUE_MAIL_TEMPLATE_URL: '" + self.issue_email_template + "'")
+                lines[idx] = lines[idx].replace(
+                    "ISSUE_MAIL_TEMPLATE_URL: ''",
+                    f"ISSUE_MAIL_TEMPLATE_URL: '{self.issue_email_template}'",
+                )
 
         with open(config_file, 'w') as f:
             f.writelines(lines)
@@ -177,25 +187,25 @@ class Buildpacbot(object):
         and keep the modified file in configuration.ts.new
         '''
         config_file = os.path.join(webapp_dir, "src", "config", "configurations.ts")
-        original_config_file = config_file + ".original"
-        new_config_file = config_file + ".new"
+        original_config_file = f"{config_file}.original"
+        new_config_file = f"{config_file}.new"
         shutil.copy2(config_file, new_config_file)
         shutil.copy2(original_config_file, config_file)
         os.remove(original_config_file)
 
     def archive_ui_app_build(self, aws_access_key, aws_secret_key, region, bucket, s3_key_prefix):
         s3_client = s3 = boto3.client('s3', region_name=region, aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key)
-        zip_file_name = self.upload_dir + "/dist"
+        zip_file_name = f"{self.upload_dir}/dist"
 
         print("Started creating zip file...")
         dir_to_archive = os.path.join(self.codebase_root_dir, "dist/pacmanspa")
         shutil.make_archive(zip_file_name, self.archive_type, dir_to_archive)
 
         s3_zip_file_key = str(os.path.join(s3_key_prefix, "dist.zip"))
-        self.write_to_debug_log("Zip File: %s, Uploading to S3..." % s3_zip_file_key)
-        s3_client.upload_file(zip_file_name + ".zip", bucket, s3_zip_file_key)
-        self.write_to_debug_log("Zip File: %s, Uploaded to S3" % s3_zip_file_key)
-        os.remove(zip_file_name + ".zip")
+        self.write_to_debug_log(f"Zip File: {s3_zip_file_key}, Uploading to S3...")
+        s3_client.upload_file(f"{zip_file_name}.zip", bucket, s3_zip_file_key)
+        self.write_to_debug_log(f"Zip File: {s3_zip_file_key}, Uploaded to S3")
+        os.remove(f"{zip_file_name}.zip")
 
     def write_to_debug_log(self, msg):
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')

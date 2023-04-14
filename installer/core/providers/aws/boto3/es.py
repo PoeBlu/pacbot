@@ -38,6 +38,6 @@ def check_es_domain_exists(domain_name, access_key, secret_key, region):
         response = client.describe_elasticsearch_domain(
             DomainName=domain_name
         )
-        return True if response['DomainStatus'] else False
+        return bool(response['DomainStatus'])
     except:
         return False

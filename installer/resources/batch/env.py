@@ -33,7 +33,7 @@ class RuleEngineBatchJobEnv(BatchComputeEnvironmentResource):
         ec2_key_pair = self.get_input_attr('ec2_key_pair')
         try:
             key_obj = ec2_client.create_key_pair(KeyName=ec2_key_pair)
-            with open(os.path.join(Settings.OUTPUT_DIR, ec2_key_pair + ".pem"), "w") as keyfile:
+            with open(os.path.join(Settings.OUTPUT_DIR, f"{ec2_key_pair}.pem"), "w") as keyfile:
                 keyfile.write(key_obj['KeyMaterial'])
         except Exception as e:
             pass
@@ -52,8 +52,8 @@ class RuleEngineBatchJobEnv(BatchComputeEnvironmentResource):
             return True
 
     def pre_generate_terraform(self):
-        warn_msg = "Batch Jobs are running, please try after it gets completed."
         if self.check_batch_jobs_running():
+            warn_msg = "Batch Jobs are running, please try after it gets completed."
             message = "\n\t ** %s **\n" % warn_msg
             print(MsgMixin.BERROR_ANSI + message + MsgMixin.RESET_ANSI)
             sys.exit()
@@ -64,4 +64,4 @@ class RuleEngineBatchJobEnv(BatchComputeEnvironmentResource):
         try:
             key_obj = ec2_client.delete_key_pair(KeyName=ec2_key_pair)
         except Exception as e:
-            print(ec2_key_pair + " Not able to delete Key Pair. Error: %s" % str(e))
+            print(f"{ec2_key_pair} Not able to delete Key Pair. Error: {str(e)}")

@@ -51,11 +51,11 @@ class ESDomain(ElasticsearchDomainResource):
 
     @classmethod
     def get_http_url_with_port(cls):
-        return "%s:%s" % (cls.get_http_url(), "80")
+        return f"{cls.get_http_url()}:80"
 
     @classmethod
     def get_http_url(cls):
-        return "http://%s" % cls.get_output_attr('endpoint')
+        return f"http://{cls.get_output_attr('endpoint')}"
 
     @classmethod
     def get_es_port(cls):
@@ -68,7 +68,9 @@ class ESDomain(ElasticsearchDomainResource):
             "es.amazonaws.com",
             Settings.RESOURCE_DESCRIPTION)
 
-        SysLog().write_debug_log("ElasticSearch IAM Service Linked role creation: Status:%s, Message: %s" % (str(status), msg))
+        SysLog().write_debug_log(
+            f"ElasticSearch IAM Service Linked role creation: Status:{str(status)}, Message: {msg}"
+        )
 
     def render_output(self, outputs):
         if self.resource_in_tf_output(outputs):

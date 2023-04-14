@@ -36,6 +36,6 @@ def check_ecr_exists(repo_name, access_key, secret_key, region):
     client = get_ecr_client(access_key, secret_key, region)
     try:
         response = client.describe_repositories(repositoryNames=[repo_name])
-        return True if len(response['repositories']) else False
+        return bool(len(response['repositories']))
     except:
         return False

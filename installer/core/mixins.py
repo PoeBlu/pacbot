@@ -44,10 +44,14 @@ class MsgMixin(metaclass=ABCMeta):
 
             print(surrounding_char * column_length)
             pre_hash_count, post_hash_count = self._get_pre_and_post_char_length(Settings.SETUP_TITLE, column_length)
-            print("%s %s %s" % (surrounding_char * pre_hash_count, Settings.SETUP_TITLE, surrounding_char * post_hash_count))
+            print(
+                f"{surrounding_char * pre_hash_count} {Settings.SETUP_TITLE} {surrounding_char * post_hash_count}"
+            )
             if Settings.get('SETUP_DESCRIPTION', None):
                 pre_hash_count, post_hash_count = self._get_pre_and_post_char_length(Settings.SETUP_DESCRIPTION, column_length)
-                print("%s %s %s" % (surrounding_char * pre_hash_count, Settings.SETUP_DESCRIPTION, surrounding_char * post_hash_count))
+                print(
+                    f"{surrounding_char * pre_hash_count} {Settings.SETUP_DESCRIPTION} {surrounding_char * post_hash_count}"
+                )
             print(surrounding_char * column_length)
 
         print(self.RESET_ANSI)
@@ -69,7 +73,7 @@ class MsgMixin(metaclass=ABCMeta):
         return pre_hash_count, post_hash_count
 
     def exit_with_provider_not_found(self):
-        print("Error: %s " % PROVIDER_NOT_FOUND)
+        print(f"Error: {PROVIDER_NOT_FOUND} ")
 
     def exit_safely(self):
         sys.exit()
@@ -172,7 +176,7 @@ class MsgMixin(metaclass=ABCMeta):
         Args:
             message (str): Message to be displayed on the line
         """
-        progress_bracket = self.BGREEN_ANSI + "[.   ]" + self.RESET_ANSI
+        progress_bracket = f"{self.BGREEN_ANSI}[.   ]{self.RESET_ANSI}"
         sys.stdout.write("\r\t%s %s\b\b\b\b" % (message, progress_bracket))
 
     def erase_printed_line(self):
@@ -203,7 +207,7 @@ class MsgMixin(metaclass=ABCMeta):
         sys.stdout.write(".")
         sys.stdout.flush()
         sleep(time_delay)
-        sys.stdout.write("." + self.RESET_ANSI)
+        sys.stdout.write(f".{self.RESET_ANSI}")
         sys.stdout.flush()
         sleep(time_delay)
 
@@ -250,7 +254,7 @@ class MsgMixin(metaclass=ABCMeta):
              duration (str): Duration in minute and seconds. Ex: 6m 34s
         """
         duration = datetime(1, 1, 1) + time_delta
-        return "%sm %ss" % (duration.minute, duration.second)
+        return f"{duration.minute}m {duration.second}s"
 
     def display_process_duration(self, start_time, end_time, step=True):
         """
@@ -263,7 +267,9 @@ class MsgMixin(metaclass=ABCMeta):
         time_delta = end_time - start_time
         duration = self.get_duration(time_delta)
         message = "\t" if step else ""
-        message = self.CYAN_ANSI + message + "Completed in %s" % duration + self.RESET_ANSI
+        message = (
+            self.CYAN_ANSI + message + f"Completed in {duration}" + self.RESET_ANSI
+        )
         print(message)
 
     def warn_another_process_running(self):

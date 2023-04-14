@@ -43,15 +43,16 @@ class RedshiftClusterResource(TerraformResource):
             checked_details (dict): Status of the existence check
         """
         checked_details = {'attr': "cluster_identifier", 'value': self.get_input_attr('cluster_identifier')}
-        exists = False
-
-        if not self.resource_in_tf_output(tf_outputs):
-            exists = redshift.check_redshift_cluster_exists(
+        exists = (
+            False
+            if self.resource_in_tf_output(tf_outputs)
+            else redshift.check_redshift_cluster_exists(
                 checked_details['value'],
                 input.aws_access_key,
                 input.aws_secret_key,
-                input.aws_region)
-
+                input.aws_region,
+            )
+        )
         return exists, checked_details
 
 
@@ -87,15 +88,16 @@ class RedshiftParameterGroupResource(TerraformResource):
             checked_details (dict): Status of the existence check
         """
         checked_details = {'attr': "name", 'value': self.get_input_attr('name')}
-        exists = False
-
-        if not self.resource_in_tf_output(tf_outputs):
-            exists = redshift.check_redshift_parameter_group_exists(
+        exists = (
+            False
+            if self.resource_in_tf_output(tf_outputs)
+            else redshift.check_redshift_parameter_group_exists(
                 checked_details['value'],
                 input.aws_access_key,
                 input.aws_secret_key,
-                input.aws_region)
-
+                input.aws_region,
+            )
+        )
         return exists, checked_details
 
 
@@ -131,13 +133,14 @@ class RedshiftSubnetGroupResource(TerraformResource):
             checked_details (dict): Status of the existence check
         """
         checked_details = {'attr': "name", 'value': self.get_input_attr('name')}
-        exists = False
-
-        if not self.resource_in_tf_output(tf_outputs):
-            exists = redshift.check_redshift_subnet_group_exists(
+        exists = (
+            False
+            if self.resource_in_tf_output(tf_outputs)
+            else redshift.check_redshift_subnet_group_exists(
                 checked_details['value'],
                 input.aws_access_key,
                 input.aws_secret_key,
-                input.aws_region)
-
+                input.aws_region,
+            )
+        )
         return exists, checked_details

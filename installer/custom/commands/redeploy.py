@@ -35,13 +35,8 @@ class Redeploy(BaseCommand):
         super().__init__(args)
 
     def _need_complete_installation(self):
-        need_complete_install = False
-
         redshift_cluster_file = os.path.join(Settings.TERRAFORM_DIR, "datastore_redshift_RedshiftCluster.tf")
-        if os.path.exists(redshift_cluster_file):
-            need_complete_install = True
-
-        return need_complete_install
+        return bool(os.path.exists(redshift_cluster_file))
 
     def execute(self, provider):
         """
@@ -65,12 +60,18 @@ class Redeploy(BaseCommand):
         Args:
             provider (string): Provider name like AWS or Azure etc
         """
-        self.validation_class = getattr(importlib.import_module(
-            provider.provider_module + '.validate'), 'SystemInstallValidation')
-        self.input_class = getattr(importlib.import_module(
-            provider.provider_module + '.input'), 'SystemInstallInput')
-        self.install_class = getattr(importlib.import_module(
-            provider.provider_module + '.install'), 'Install')
+        self.validation_class = getattr(
+            importlib.import_module(f'{provider.provider_module}.validate'),
+            'SystemInstallValidation',
+        )
+        self.input_class = getattr(
+            importlib.import_module(f'{provider.provider_module}.input'),
+            'SystemInstallInput',
+        )
+        self.install_class = getattr(
+            importlib.import_module(f'{provider.provider_module}.install'),
+            'Install',
+        )
 
     def re_deploy_pacbot(self, input_instance):
         """
@@ -86,7 +87,7 @@ class Redeploy(BaseCommand):
         except Exception as e:
             pass
 
-        terraform_with_targets = False if self.need_complete_install else True
+        terraform_with_targets = not self.need_complete_install
         resources_to_process = self.get_complete_resources(input_instance) if self.need_complete_install else resources_to_process
 
         self.run_pre_deployment_process(resources_to_process)
@@ -127,38 +128,36 @@ class Redeploy(BaseCommand):
             return
 
         for resource in resources_to_process:
-            if self.terraform_thread.isAlive():
-                resource_base_classes = inspect.getmro(resource.__class__)
-
-                if ECSTaskDefinitionResource in resource_base_classes:
-                    try:
-                        deregister_task_definition(
-                            Settings.AWS_ACCESS_KEY,
-                            Settings.AWS_SECRET_KEY,
-                            Settings.AWS_REGION,
-                            resource.get_input_attr('family'),
-                        )
-                    except:
-                        pass
-                elif ECSClusterResource in resource_base_classes:
-                    cluster_name = resource.get_input_attr('name')
-            else:
+            if not self.terraform_thread.isAlive():
                 return
 
-        for i in range(3):
-            if self.terraform_thread.isAlive():
+            resource_base_classes = inspect.getmro(resource.__class__)
+
+            if ECSTaskDefinitionResource in resource_base_classes:
                 try:
-                    stop_all_tasks_in_a_cluster(
-                        cluster_name,
+                    deregister_task_definition(
                         Settings.AWS_ACCESS_KEY,
                         Settings.AWS_SECRET_KEY,
-                        Settings.AWS_REGION
+                        Settings.AWS_REGION,
+                        resource.get_input_attr('family'),
                     )
                 except:
                     pass
-                time.sleep(20)
-            else:
+            elif ECSClusterResource in resource_base_classes:
+                cluster_name = resource.get_input_attr('name')
+        for _ in range(3):
+            if not self.terraform_thread.isAlive():
                 return
+            try:
+                stop_all_tasks_in_a_cluster(
+                    cluster_name,
+                    Settings.AWS_ACCESS_KEY,
+                    Settings.AWS_SECRET_KEY,
+                    Settings.AWS_REGION
+                )
+            except:
+                pass
+            time.sleep(20)
 
     def run_real_deployment(self, input_instance, resources_to_process, terraform_with_targets):
         """

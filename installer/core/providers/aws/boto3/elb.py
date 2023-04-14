@@ -56,7 +56,7 @@ def check_alb_exists(alb_name, access_key, secret_key, region):
     Returns:
         Boolean: True if env exists else False
     """
-    return True if get_alb(alb_name, access_key, secret_key, region) else False
+    return bool(get_alb(alb_name, access_key, secret_key, region))
 
 
 def check_target_group_exists(tg_name, access_key, secret_key, region):
@@ -75,7 +75,7 @@ def check_target_group_exists(tg_name, access_key, secret_key, region):
     client = get_elbv2_client(access_key, secret_key, region)
     try:
         response = client.describe_target_groups(Names=[tg_name])
-        return True if len(response['TargetGroups']) else False
+        return bool(len(response['TargetGroups']))
     except:
         return False
 
@@ -93,9 +93,7 @@ def delete_all_listeners_of_alb(alb_name, access_key, secret_key, region):
     Returns:
         Boolean: True if env exists else False
     """
-    alb = get_alb(alb_name, access_key, secret_key, region)
-
-    if alb:
+    if alb := get_alb(alb_name, access_key, secret_key, region):
         client = get_elbv2_client(access_key, secret_key, region)
         listeners = client.describe_listeners(LoadBalancerArn=alb['LoadBalancerArn'])
 
@@ -103,7 +101,7 @@ def delete_all_listeners_of_alb(alb_name, access_key, secret_key, region):
             try:
                 client.delete_listener(ListenerArn=listener['ListenerArn'])
             except:
-                raise Exception("Not able to remove listener: %s" % listener['ListenerArn'])
+                raise Exception(f"Not able to remove listener: {listener['ListenerArn']}")
 
 
 def delete_alltarget_groups(tg_names, access_key, secret_key, region):
@@ -118,4 +116,4 @@ def delete_alltarget_groups(tg_names, access_key, secret_key, region):
         try:
             client.delete_target_group(TargetGroupArn=tg['TargetGroupArn'])
         except:
-            raise Exception("Not able to remove listener: %s" % tg['TargetGroupArn'])
+            raise Exception(f"Not able to remove listener: {tg['TargetGroupArn']}")

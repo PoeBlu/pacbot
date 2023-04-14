@@ -36,6 +36,6 @@ def check_log_group_exists(log_group_name, access_key, secret_key, region):
     client = get_logs_client(access_key, secret_key, region)
     try:
         response = client.describe_log_groups(logGroupNamePrefix=log_group_name)
-        return True if len(response['logGroups']) else False
+        return bool(len(response['logGroups']))
     except:
         return False

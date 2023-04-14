@@ -97,10 +97,10 @@ class Terraform(object):
         self.working_dir = working_dir
         self.state = state
         self.targets = [] if targets is None else targets
-        self.variables = dict() if variables is None else variables
+        self.variables = {} if variables is None else variables
         self.parallelism = parallelism
         self.terraform_bin_path = terraform_bin_path \
-            if terraform_bin_path else 'terraform'
+                if terraform_bin_path else 'terraform'
         self.var_file = var_file
         self.temp_var_files = VariableFiles()
 
@@ -109,15 +109,13 @@ class Terraform(object):
         self.read_state_file(self.state)
 
         self.stdout_log = subprocess.PIPE
-        if stdout_log_file:
-            if os.path.exists(stdout_log_file):
-                self.stdout_log = open(stdout_log_file, "a+")
+        if stdout_log_file and os.path.exists(stdout_log_file):
+            self.stdout_log = open(stdout_log_file, "a+")
 
     def __getattr__(self, item):
         def wrapper(*args, **kwargs):
             cmd_name = str(item)
-            if cmd_name.endswith('_cmd'):
-                cmd_name = cmd_name[:-4]
+            cmd_name = cmd_name.removesuffix('_cmd')
             logging.debug('called with %r and %r' % (args, kwargs))
             return self.cmd(cmd_name, *args, **kwargs)
 
@@ -147,15 +145,16 @@ class Terraform(object):
         return [dir_or_plan] if dir_or_plan else []
 
     def _generate_default_options(self, input_options):
-        option_dict = dict()
-        option_dict['state'] = self.state
-        option_dict['target'] = self.targets
-        option_dict['var'] = self.variables
-        option_dict['var_file'] = self.var_file
-        option_dict['parallelism'] = self.parallelism
-        option_dict['no_color'] = IsFlagged
-        option_dict['input'] = False
-        option_dict.update(input_options)
+        option_dict = {
+            'state': self.state,
+            'target': self.targets,
+            'var': self.variables,
+            'var_file': self.var_file,
+            'parallelism': self.parallelism,
+            'no_color': IsFlagged,
+            'input': False,
+        }
+        option_dict |= input_options
         return option_dict
 
     def destroy(self, dir_or_plan=None, force=IsFlagged, **kwargs):
@@ -250,14 +249,10 @@ class Terraform(object):
                 if 'backend-config' in option:
                     for bk, bv in value.items():
                         cmds += ['-backend-config={k}={v}'.format(k=bk, v=bv)]
-                    continue
-
-                # since map type sent in string won't work, create temp var file for
-                # variables, and clean it up later
                 else:
                     filename = self.temp_var_files.create(value)
                     cmds += ['-var-file={0}'.format(filename)]
-                    continue
+                continue
 
             # simple flag,
             if value is IsFlagged:
@@ -317,17 +312,15 @@ class Terraform(object):
 
         working_folder = self.working_dir if self.working_dir else None
 
-        environ_vars = {}
-        if self.is_env_vars_included:
-            environ_vars = os.environ.copy()
-
+        environ_vars = os.environ.copy() if self.is_env_vars_included else {}
         p = subprocess.Popen(cmds, stdout=stdout, stderr=stderr,
                              cwd=working_folder, env=environ_vars)
 
-        if not synchronous:
-            return p, None, None
-
-        return self.return_process_result(p, capture_output, raise_on_error)
+        return (
+            self.return_process_result(p, capture_output, raise_on_error)
+            if synchronous
+            else (p, None, None)
+        )
 
     def return_process_result(self, p, capture_output=True, raise_on_error=False):
         out, err = p.communicate()
@@ -377,7 +370,7 @@ class Terraform(object):
         full_value = kwargs.pop('full_value', False)
         name_provided = (len(args) > 0)
         kwargs['json'] = IsFlagged
-        if not kwargs.get('capture_output', True) is True:
+        if kwargs.get('capture_output', True) is not True:
             raise ValueError('capture_output is required for this method')
 
         ret, out, err = self.output_cmd(*args, **kwargs)

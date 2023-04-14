@@ -36,7 +36,7 @@ def check_rule_exists(rule_name, access_key, secret_key, region):
     client = get_event_client(access_key, secret_key, region)
     try:
         response = client.describe_rule(Name=rule_name)
-        return True if response else False
+        return bool(response)
     except:
         return False
 
@@ -78,9 +78,7 @@ def remove_all_targets_of_a_rule(rule_name, access_key, secret_key, region):
     """
     targets = get_targets_of_a_rule(rule_name, access_key, secret_key, region)
 
-    target_ids = [item['Id'] for item in targets]
-
-    if len(target_ids) > 0:
+    if target_ids := [item['Id'] for item in targets]:
         client = get_event_client(access_key, secret_key, region)
 
         client.remove_targets(

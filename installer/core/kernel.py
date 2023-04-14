@@ -46,10 +46,7 @@ class Executor(MsgMixin):
             return False
 
         if self._check_tools_are_available() and self._check_python_packages_are_available():
-            if self.is_another_process_running():
-                return False
-            return True
-
+            return not self.is_another_process_running()
         return False
 
     def is_another_process_running(self):
@@ -78,7 +75,7 @@ class Executor(MsgMixin):
 
         for tool_name, command in tools_required.items():
             error, msg, errmsg = run_command(command)
-            display_message = "Tool: %s, checking" % tool_name
+            display_message = f"Tool: {tool_name}, checking"
             status = K.NOT_FOUND if error or errmsg else K.FOUND
             tools_available = False if error or errmsg else tools_available
             self.show_step_inner_messaage(display_message, status, errmsg)
@@ -105,7 +102,11 @@ class Executor(MsgMixin):
             status_msg = K.FOUND if success else K.NOT_FOUND
             if not success:
                 error = True
-            display_msg = "Package: %s, Module: %s" % (item[0], item[1]) if type(item) is tuple else "Module: %s" % item
+            display_msg = (
+                f"Package: {item[0]}, Module: {item[1]}"
+                if type(item) is tuple
+                else f"Module: {item}"
+            )
             display_msg += ", checking"
             self.show_step_inner_messaage(display_msg, status_msg, err_msg)
 

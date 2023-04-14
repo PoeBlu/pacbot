@@ -42,13 +42,14 @@ class Destroy(BaseAction):
             terraform_with_targets (boolean): If partial destroy is to be done (if --tags is supplied)
             dry_run (boolean): Decides whether original destroy should be done
         """
-        error_response = self.validate_arguments(resources, terraform_with_targets)
-        if not error_response:
+        if error_response := self.validate_arguments(
+            resources, terraform_with_targets
+        ):
+            self.exit_with_validation_errors(error_response)
+        else:
             self._create_terraform_provider_file()
             self.execute_terraform_destroy(resources, terraform_with_targets, dry_run)
             self._delete_terraform_provider_file()
-        else:
-            self.exit_with_validation_errors(error_response)
 
     def execute_terraform_destroy(self, resources, terraform_with_targets, dry_run):
         """
@@ -128,7 +129,7 @@ class Destroy(BaseAction):
         self.run_pre_destoy(resources)
 
         # May be timeout causes first destroy to be a failure hence attempt as many times as the value in the setting
-        for attempt in range(Settings.DESTROY_NUM_ATTEMPTS):
+        for _ in range(Settings.DESTROY_NUM_ATTEMPTS):
             self.executed_with_error = False
             self.exception = None
 
@@ -153,7 +154,7 @@ class Destroy(BaseAction):
         sleep(1)  # To sleep initaially for pre-destroy to process
         while self.destroy_statuses.get('execution_finished') != self.current_destroy_status and self.terraform_thread.isAlive():
             duration = self.CYAN_ANSI + self.get_duration(datetime.now() - self.destroy_start_time) + self.END_ANSI
-            message = "Time elapsed: %s" % duration
+            message = f"Time elapsed: {duration}"
             self.show_progress_message(message, 1.5)
 
         self.erase_printed_line()

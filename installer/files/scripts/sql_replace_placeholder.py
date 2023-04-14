@@ -15,10 +15,10 @@ def replace_placeholder_with_values(env_variables, sql_file):
 
     for idx, line in enumerate(lines):
         for key, value in env_variables.items():
-            compare_str = "SET @%s='$%s'" % (key, key)
+            compare_str = f"SET @{key}='${key}'"
             if compare_str in line:
                 replace = compare_str
-                replace_with = "SET @%s='%s'" % (key, value)
+                replace_with = f"SET @{key}='{value}'"
                 lines[idx] = line.replace(replace, replace_with)
                 break
 
@@ -47,7 +47,7 @@ def get_env_variables_and_values(env_dict):
 
 
 if __name__ == "__main__":
-    env_variables = get_env_variables_and_values(dict(os.environ.items()))
+    env_variables = get_env_variables_and_values(dict(os.environ))
     sql_file = os.getenv('SQL_FILE_PATH')
 
     replace_placeholder_with_values(env_variables, sql_file)

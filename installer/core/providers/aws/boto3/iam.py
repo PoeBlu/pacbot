@@ -219,7 +219,7 @@ def check_role_exists(role_name, access_key, secret_key):
     iam_client = get_iam_client(access_key, secret_key)
     try:
         role = iam_client.get_role(RoleName=role_name)
-        return True if role else False
+        return bool(role)
     except:
         return False
 
@@ -237,11 +237,11 @@ def check_policy_exists(policy_name, access_key, secret_key, account_id):
         Boolean: True if env exists else False
     """
     iam_client = get_iam_client(access_key, secret_key)
-    policy_arn = "arn:aws:iam::%s:policy/%s" % (str(account_id), policy_name)
+    policy_arn = f"arn:aws:iam::{str(account_id)}:policy/{policy_name}"
 
     try:
         policy = iam_client.get_policy(PolicyArn=policy_arn)
-        return True if policy else False
+        return bool(policy)
     except:
         return False
 
@@ -261,6 +261,6 @@ def check_instance_profile_exists(instance_profile_name, access_key, secret_key)
     iam_client = get_iam_client(access_key, secret_key)
     try:
         profile = iam_client.get_instance_profile(InstanceProfileName=instance_profile_name)
-        return True if profile else False
+        return bool(profile)
     except:
         return False

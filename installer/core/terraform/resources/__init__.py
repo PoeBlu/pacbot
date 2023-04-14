@@ -74,14 +74,12 @@ class BaseTerraformResource(metaclass=ABCMeta):
         Returns:
             output_attr_ref (str): Terraform output reference of the given attribute
         """
-        if getattr(cls, "count", None):
-            output_attr_ref = "%s.*.%s" % (cls.get_terraform_resource_path(), key)
-            output_attr_ref += "" if index is False else "[count.index]"
-            output_attr_ref = "${%s}" % output_attr_ref
-        else:
-            output_attr_ref = "${%s.%s}" % (cls.get_terraform_resource_path(), key)
+        if not getattr(cls, "count", None):
+            return "${%s.%s}" % (cls.get_terraform_resource_path(), key)
 
-        return output_attr_ref
+        output_attr_ref = f"{cls.get_terraform_resource_path()}.*.{key}"
+        output_attr_ref += "" if index is False else "[count.index]"
+        return "${%s}" % output_attr_ref
 
     @classmethod
     def get_output_attr_name(cls, name):
@@ -115,7 +113,7 @@ class BaseTerraformResource(metaclass=ABCMeta):
         """
         return os.path.join(
             Settings.TERRAFORM_DIR,
-            self.get_resource_id() + "." + self.tf_file_extension
+            f"{self.get_resource_id()}.{self.tf_file_extension}",
         )
 
     def get_resource_dependency_list(self):
@@ -125,13 +123,10 @@ class BaseTerraformResource(metaclass=ABCMeta):
         Returns:
             dependency_list (list): dependency resources path list
         """
-        dependency_list = []
-
-        for resource_class in self.DEPENDS_ON:
-            dependency_list.append(
-                resource_class.get_terraform_resource_path())
-
-        return dependency_list
+        return [
+            resource_class.get_terraform_resource_path()
+            for resource_class in self.DEPENDS_ON
+        ]
 
     def generate_terraform_script(self, terraform_args_dict):
         """
@@ -151,12 +146,10 @@ class BaseTerraformResource(metaclass=ABCMeta):
             }
         }
 
-        output = self.get_terraform_output_list()
-        if output:
+        if output := self.get_terraform_output_list():
             terraform_script_dict['output'] = output
 
-        variables = self.get_terraform_variables()
-        if variables:
+        if variables := self.get_terraform_variables():
             terraform_script_dict['variable'] = variables
 
         return terraform_script_dict
@@ -177,8 +170,7 @@ class BaseTerraformResource(metaclass=ABCMeta):
             default_value = variable_class.get_input_attr('default_value')
             variable_dict = {'default': default_value}
 
-            variable_type = variable_class.get_input_attr('variable_type')
-            if variable_type:
+            if variable_type := variable_class.get_input_attr('variable_type'):
                 variable_dict['type'] = variable_type
 
             variables[variable_name] = variable_dict
@@ -192,7 +184,7 @@ class BaseTerraformResource(metaclass=ABCMeta):
                 terraform_args_dict = self.get_terraform_resource_args_dict()
                 self.create_terraform_resource_file(terraform_args_dict)
             except Exception as e:
-                msg = 'Error occured in Terraform file generation. Resource: %s' % self.__class__.__name__
+                msg = f'Error occured in Terraform file generation. Resource: {self.__class__.__name__}'
                 print(msg)
                 SysLog().write_error_log(str(e) + '\n' + msg)
                 sys.exit()
@@ -264,8 +256,10 @@ class BaseTerraformResource(metaclass=ABCMeta):
         if len(dependency_list) > 0:
             terraform_args_dict['depends_on'] = dependency_list
 
-        provisioners = self.get_provisioners() + self.get_mandatory_provisioners()
-        if provisioners:
+        if (
+            provisioners := self.get_provisioners()
+            + self.get_mandatory_provisioners()
+        ):
             terraform_args_dict['provisioner'] = provisioners
 
         return terraform_args_dict
@@ -294,7 +288,7 @@ class BaseTerraformResource(metaclass=ABCMeta):
         msg_list = []
         for arg in self._get_required_arguments():
             if getattr(self, arg, None) is None:
-                msg_list.append("Required argument are not provided. Argument: %s" % arg)
+                msg_list.append(f"Required argument are not provided. Argument: {arg}")
                 success = False
 
         if self.get_resource_id() is None:
@@ -315,9 +309,13 @@ class BaseTerraformResource(metaclass=ABCMeta):
         for arg, attrs in self.available_args.items():
             if attrs['required'] is True:
                 if 'inline_args' in attrs:
-                    for inline_arg, inline_arg_attrs in attrs.get('inline_args', {}).items():
-                        if inline_arg_attrs['required'] is True:
-                            required_arguments.append(inline_arg)
+                    required_arguments.extend(
+                        inline_arg
+                        for inline_arg, inline_arg_attrs in attrs.get(
+                            'inline_args', {}
+                        ).items()
+                        if inline_arg_attrs['required'] is True
+                    )
                 else:
                     required_arguments.append(arg)
 
@@ -396,7 +394,7 @@ class TerraformResource(BaseTerraformResource, metaclass=ABCMeta):
         Returns:
             boolean: True if created else False
         """
-        return True if tf_outputs.get(self.get_resource_id(), None) else False
+        return bool(tf_outputs.get(self.get_resource_id(), None))
 
     def get_terraform_output_list(self):
         """
@@ -420,15 +418,9 @@ class TerraformResource(BaseTerraformResource, metaclass=ABCMeta):
         id_reference = self.get_output_attr('id')
         resource_created_status_file = get_resource_created_status_op_file(self.get_resource_id())
 
-        local_execs = [
-            {
-                'local-exec': {
-                    'command': "echo 1 > %s" % resource_created_status_file
-                }
-            }
+        return [
+            {'local-exec': {'command': f"echo 1 > {resource_created_status_file}"}}
         ]
-
-        return local_execs
 
 
 class TerraformData(BaseTerraformResource, metaclass=ABCMeta):
@@ -489,7 +481,7 @@ class BaseTerraformVariable(BaseTerraformResource):
                 line = line.replace(": ", "=", 1)
 
                 if re.match("^\[", line):
-                    line = line.replace("[", self.variable_name + " = [")
+                    line = line.replace("[", f"{self.variable_name} = [")
                 output_lines.append("%s\n" % line)
             fp.writelines(output_lines)
 
@@ -502,7 +494,7 @@ class BaseTerraformVariable(BaseTerraformResource):
         """
         return os.path.join(
             Settings.TERRAFORM_DIR,
-            self.get_resource_id() + "." + self.tf_file_extension
+            f"{self.get_resource_id()}.{self.tf_file_extension}",
         )
 
     @classmethod

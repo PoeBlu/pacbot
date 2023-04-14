@@ -12,29 +12,29 @@ class BuildUiAndApis(NullResource):
     def pre_generate_terraform(self):
         pom_file = os.path.join(Settings.PACBOT_CODE_DIR, "pom.xml")
         if not os.path.exists(pom_file):
-            raise Exception("Pacbot CodeBase, %s,  is Not Found!" % pom_file)
+            raise Exception(f"Pacbot CodeBase, {pom_file},  is Not Found!")
 
     def get_provisioners(self):
         pacbot_build_script = os.path.join(get_terraform_scripts_dir(), 'build_pacbot.py')
         upload_dir = self._create_dir_to_store_build_ap()
 
-        local_execs = [{
-            'local-exec': {
-                'command': pacbot_build_script,
-                'environment': {
-                    'PROVIDER_FILE': get_terraform_provider_file(),
-                    'APPLICATION_DOMAIN': ApplicationLoadBalancer.get_pacbot_domain_url(),
-                    'PACBOT_CODE_DIR': Settings.PACBOT_CODE_DIR,
-                    'DIST_FILES_UPLOAD_DIR': upload_dir,
-                    'LOG_DIR': Settings.LOG_DIR,
-                    'S3_BUCKET': BucketStorage.get_output_attr('bucket'),
-                    'S3_KEY_PREFIX': Settings.RESOURCE_NAME_PREFIX
-                },
-                'interpreter': [Settings.PYTHON_INTERPRETER]
+        return [
+            {
+                'local-exec': {
+                    'command': pacbot_build_script,
+                    'environment': {
+                        'PROVIDER_FILE': get_terraform_provider_file(),
+                        'APPLICATION_DOMAIN': ApplicationLoadBalancer.get_pacbot_domain_url(),
+                        'PACBOT_CODE_DIR': Settings.PACBOT_CODE_DIR,
+                        'DIST_FILES_UPLOAD_DIR': upload_dir,
+                        'LOG_DIR': Settings.LOG_DIR,
+                        'S3_BUCKET': BucketStorage.get_output_attr('bucket'),
+                        'S3_KEY_PREFIX': Settings.RESOURCE_NAME_PREFIX,
+                    },
+                    'interpreter': [Settings.PYTHON_INTERPRETER],
+                }
             }
-        }]
-
-        return local_execs
+        ]
 
     def _create_dir_to_store_build_ap(self):
         upload_dir = os.path.join(Settings.TERRAFORM_DIR, 'upload_to_s3')

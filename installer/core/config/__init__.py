@@ -28,7 +28,11 @@ class Settings:
         Args:
             setting (str): Variable name
         """
-        return True if setting.isupper() and not setting.startswith("__") and not setting.endswith("__") else False
+        return bool(
+            setting.isupper()
+            and not setting.startswith("__")
+            and not setting.endswith("__")
+        )
 
     @classmethod
     def set_class_attributes(cls, config):
@@ -112,7 +116,7 @@ class Settings:
 
         if errors:
             for error in errors:
-                print("Error: %s" % error)
+                print(f"Error: {error}")
             return False
 
         return True

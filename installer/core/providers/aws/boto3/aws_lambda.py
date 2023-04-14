@@ -36,6 +36,6 @@ def check_function_exists(function_name, access_key, secret_key, region):
     client = get_lambda_client(access_key, secret_key, region)
     try:
         response = client.get_function(FunctionName=function_name)
-        return True if response['Configuration'] else False
+        return bool(response['Configuration'])
     except:
         return False

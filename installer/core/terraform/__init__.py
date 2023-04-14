@@ -179,8 +179,8 @@ class PyTerraform():
         for resource_name in taint_resources:
             response = terraform.cmd("taint", resource_name)
             if response[0] == 1:
-                self.log_obj.write_debug_log(K.TERRAFORM_TAINT_ERROR + ": " + response[2])
-                error_message = response[2] + " : " + error_message
+                self.log_obj.write_debug_log(f"{K.TERRAFORM_TAINT_ERROR}: {response[2]}")
+                error_message = f"{response[2]} : {error_message}"
 
         self.log_obj.write_debug_log(K.TERRAFORM_TAINT_COMPLETED)
 
@@ -223,12 +223,11 @@ class PyTerraform():
         Returns:
             taint_resources (list): List of resources to be tainted
         """
-        taint_resources = []
-        for resource in resources:
-            if TerraformResource in inspect.getmro(resource.__class__):
-                taint_resources.append(get_terraform_resource_path(resource))
-
-        return taint_resources
+        return [
+            get_terraform_resource_path(resource)
+            for resource in resources
+            if TerraformResource in inspect.getmro(resource.__class__)
+        ]
 
     @classmethod
     def save_terraform_output(cls):
@@ -260,11 +259,10 @@ class PyTerraform():
         terraform = Terraform(
             working_dir=Settings.TERRAFORM_DIR,
         )
-        response = terraform.output()
-        if response:
+        if response := terraform.output():
             for key, item in response.items():
                 key_splitted = key.split('-')
-                resource_key = '-'.join(key_splitted[0:-1])
+                resource_key = '-'.join(key_splitted[:-1])
 
                 if resource_key in output_dict:
                     output_dict[resource_key][key_splitted[-1]] = item['value']
@@ -322,7 +320,7 @@ class PyTerraform():
             json.dump(current_status, jsonfile, indent=4)
 
     @classmethod
-    def get_current_status(self):
+    def get_current_status(cls):
         """
         Write current status for the executed comamnd to status file
 
